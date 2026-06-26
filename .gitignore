@@ -1,0 +1,27 @@
+# Build
+x64/
+Debug/
+Release/
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Temporary
+*.log
+*.tmp
+
+# Database
+*.VC.db
+*.VC.opendb
+
+# CUDA
+*.cubin
+*.ptx
+*.obj
+*.pdb
+*.ilk
+*.idb

@@ -1,0 +1,106 @@
+### Recording of Version
+
+---
+
+- Main Workspace
+  - 
+- Pan
+  - Spot - Main Process - Single picture
+    - ```BcpFiles -> Files_1031 -> ..._v1```
+      - 01
+    - the process of generating the Linear diagram
+      - ```BcpFiles -> Files_1031 -> ..._v2```
+        - 05
+    - the process of generating the mask image with a specified radius
+      - ```BcpFiles -> Files_1104 -> ..._v1```
+        - 06
+  - Spot - Main Process - Multipul picture
+    - ```BcpFiles -> Files_1107 -> ..._v1```
+      - for generating tarImg - 07
+    - ```BcpFiles -> Files_1107 -> ..._v2```
+    - ```BcpFiles -> Files_1207 -> ..._v1```
+    - ```BcpFiles -> Files_1209 -> ..._v2```
+      - Main Process - Multipul picture
+        - GA - MainPart - Perfect - Testing
+    - ```BcpFiles -> Files_1209 -> ..._v3```
+      - For testing the algorithm with the dvs trained by GA-SpotDetect when processing the perfect oriImg
+    - ```BcpFiles -> Files_1210 -> ..._v1```
+    - ```BcpFiles -> Files_1211 -> ..._v1```
+      - Main Process01 - Multipul picture - 11
+        - GA - MainPart
+    - ```BcpFiles -> Files_1212 -> ..._v1```
+    - ```BcpFiles -> Files_1213 -> ..._v1```
+      - FullSearch
+    - ```BcpFiles -> Files_1216 -> ..._v1```
+      - Main Process02 - Multipul picture - 13
+        - GA - Decision Tree
+    - ```BcpFiles -> Files_1216 -> ..._v2```
+      - Main Process03 - Multipul picture - 14
+        - GA - FullSearch - Divided
+    - ```BcpFiles -> Files_1220 -> ..._v1```
+      - Line-chart generating program
+    - ```BcpFiles -> Files_1220 -> ..._v2```
+      - For generating the tarImg of large-spot image (with defect res) - Main
+    - ```BcpFiles -> Files_1225 -> ..._v2```
+      - **Main Process01 - Multipul picture (large spot in GA) **
+        - master branch - with perfect res
+    - ```BcpFiles -> Files_1225 -> ..._v3```
+      - **test branch of 1225-v2**
+        - modified the eliteBack func in GA part, with double time costing
+    - ```BcpFiles -> Files_0318_2025 -> ..._v1```
+      - **test branch of 1225-v3**
+        - Processing with 4 Sets (2 Sets been adding)
+    - ```BcpFiles -> Files_0210_2025 -> ..._v1```
+      - Main Process01 - Multipul picture (large spot in GA) 
+        - master branch - with defect res
+    - ```BcpFiles -> Files_0210_2025 -> ..._v2```
+      - Main Process01 - Multipul picture (large spot in GA) 
+        - master branch - with defect res
+        - for vertifying the function of gaussianBlur and medianBlur
+    - ```BcpFiles -> Files_0213_2025 -> ..._v1```
+    - ```BcpFiles -> Files_0114 -> ..._v1```
+      - For testing the full-search of single set
+    - ```BcpFiles -> Files_0131_2025 -> ..._v1```
+      - **For generating the tarImg of large-spot image (with perfect res)**
+        - finished
+    - ```BcpFiles -> Files_0314_2025 -> ..._v1```
+      - For testing the system of large spot detect
+  - Rollback program of spot (汚れ・マジック)
+    - ```BcpFiles -> Files_0321_2025 -> ..._v1```
+    - ```BcpFiles -> Files_0321_2025 -> ..._v2```
+  - **Comprehensive Version of Single Process**
+    - ```BcpFiles -> Files_0325_2025 -> ..._v3```
+      - **Testing Version**
+  - **Comprehensive Version of GA**
+    - ```BcpFiles -> Files_0327_2025 -> ..._v1```
+      - **Master Branch**
+        - Sub-Testing
+          - ```BcpFiles -> Files_0331_2025 -> ..._v1```
+    - ```BcpFiles -> Files_0324_2025 -> ..._v1```
+    - ```BcpFiles -> Files_0325_2025 -> ..._v1```
+      - Testing Branch - 01
+        - ```Single Process of tippinngu-detect, thresh -> bitWise -> ...```
+    - ```BcpFiles -> Files_0325_2025 -> ..._v2```
+      - Testing Branch - 02
+        - ```Single Process of tippinngu-detect, thresh -> ... -> bitWise```
+  - Fold
+    - ```BcpFiles -> Files_1023 -> ..._v2```
+      - 02
+  - ELSE
+    - The process of text ( 「，」「．」 ) ing
+      - ```BcpFiles -> Files_1110 -> ..._v1```
+        - 09 
+- LY
+  - Spot
+    - ```BcpFiles -> Files_1024 -> ..._v1```
+      - Ori from LY
+        - 03
+    - ```BcpFiles -> Files_1024 -> ..._v2```
+      - Several modifying been made (test)
+        - 04
+    - ```BcpFiles -> Files_0122_2025 -> ..._v1```
+      - Document of DecisionTree of bad res (```×12000```) 
+  - Spot - GP
+    - ```BcpFiles -> Files_0326_2025 -> ..._v1```
+    - ```BcpFiles -> Files_0326_2025 -> ..._v2```
+      - Testing

@@ -1,0 +1,105 @@
+### Version of Program
+
+---
+
+- P1 - シワ
+  - Single Process
+  - GA
+    - Ori program by Chen
+      - ```Files_Pre - GA_Ori.cpp```
+- P2 - 汚れ・マジック
+  - Single Process
+    - 差分入れ + Labeling 保持 + マスク抜け
+      - ```BcpFiles -> Files_0407_2025 -> ..._v1```
+  - GA
+    - 差分処理抜け・マスク付け - Master Branch
+      - ```BcpFiles -> Files_1211 -> ..._v1```
+    - 差分入れ + Labeling 保持 + マスク抜け
+      - ```BcpFiles -> Files_0407_2025 -> ..._v2```
+  - Decision-Tree based on GA
+    - 差分処理抜け・マスク付け - Master Branch
+      - ```BcpFiles -> Files_1216 -> ..._v1```
+  - Full Search
+    - 差分処理抜け・マスク付け - Master Branch
+      - ```BcpFiles -> Files_1216 -> ..._v2```
+- P3 - チッピング
+  - Single Process
+    - マスク付け - Master Branch
+      - ```BcpFiles -> Files_0131_2025 -> ..._v1```
+    - マスク抜け・Sobel入れ
+      - ```BcpFiles -> Files_0407_2025 -> ..._v3```
+  - GA
+    - マスク付け - Master Branch
+      - ```BcpFiles -> Files_1225 -> ..._v3```
+- P4 - 汚れ・マジック・チッピング
+  - Single Process
+    - マスク抜け - Master Branch
+      - ```BcpFiles -> Files_0407_2025 -> ..._v5```
+        - Version-1.0
+      - ```BcpFiles -> Files_0422_2025 -> ..._v1```
+        - Version-2.0
+      - ```BcpFiles -> Files_0514_2025 -> ..._v1```
+        - Version-3.0
+      - ```BcpFiles -> Files_0514_2025 -> ..._v1_test02```
+        - **Version-4.0**
+    - Test version extended by Master Branch
+      - **```BcpFiles -> Files_0627_2025 -> ..._v1```**
+  - GA
+    - マスク抜け - Master Branch
+      - ```BcpFiles -> Files_0407_2025 -> ..._v6```
+        - Version-1.0
+      - ```BcpFiles -> Files_0422_2025 -> ..._v2```
+        - Version-2.0
+      - ```BcpFiles -> Files_0514_2025 -> ..._v2```
+        - Version-3.0
+      - ```BcpFiles -> Files_0514_2025 -> ..._v2_test02```
+        - **Version-4.0**
+    - Test version extended by Master Branch
+      - 
+  - GP
+    - **Version - 01 (ACTIT)**
+      - ```BcpFiles -> Files_0721_2025 -> ..._v1```
+        - Version-1.0
+      - ```BcpFiles -> Files_0815_2025 -> ..._v1```
+        - Version-2.0
+      - ```BcpFiles -> Files_0820_2025 -> ..._v1```
+        - Version-3.0
+      - ```BcpFiles -> Files_1017_2025 -> ..._v1```
+        - **Version-4.0**
+        - **Processing**
+    - **Memo**
+      - Program Bug　ー＞　When running time been set to { 2, 3, 4, ... }, The resImg and output f1-score is not matched
+        - Wait to resolve
+  - GP + GA
+    - ```BcpFiles -> Files_1006_2025 -> ..._v1```
+      - Version-1.0
+        - Failed
+    - ```BcpFiles -> Files_1006_2025 -> ..._v2```
+      - Version-2.0
+    - ```BcpFiles -> Files_1006_2025 -> ..._v3```
+      - Version-3.0
+    - ```BcpFiles -> Files_1006_2025 -> ..._v4```
+      - Version-4.0
+    - ```BcpFiles -> Files_1006_2025 -> ..._v5```
+      - Version-5.0
+    - ```BcpFiles -> Files_1006_2025 -> ..._v6```
+      - Version-6.0
+    - ```BcpFiles -> Files_1006_2025 -> ..._v7```
+      - Version-7.0
+    - ```BcpFiles -> Files_1006_2025 -> ..._v8```
+      - Version-8.0
+  - **GP + GA + Pruning + Knowledge Injection**
+    - ```BcpFiles -> Files_0519_2026 -> ..._v1```
+      - Version-1.0
+    - ```BcpFiles -> Files_0519_2026 -> ..._v2```
+      - Version-2.0
+  - **GP + GA + Pruning + Knowledge Injection + CUDA**
+    - ```BcpFiles -> Files_0528_2026 -> ..._v1```
+      - **Version-1.0**
+- P5 - ELSE
+  - Line-chart generating program
+    - ```BcpFiles -> Files_1220 -> ..._v1.py```
+  - generating the mask image with a specified radius
+    - ```BcpFiles -> Files_1104 -> ..._v1```
+  - **Calculate the f1-value of imgs trained by Swin-UNet**
+    -  ```BcpFiles -> Files_0815_2025 -> ..._v3```
