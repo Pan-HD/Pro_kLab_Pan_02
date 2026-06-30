@@ -38,7 +38,7 @@ using namespace cv;
 // GP parameters
 #define POP_SIZE 100 // Pop_Size of GP
 // #define GENERATIONS 10000 // Generation of GP
-#define GENERATIONS 10
+#define GENERATIONS 30
 #define OFFSPRING_COUNT 20 // OFFSPRING_COUNT of GP
 #define MUTATION_RATE 0.9 // GP
 #define NUM_TYPE_FUNC 16 // GP
