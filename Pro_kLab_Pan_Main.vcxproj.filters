@@ -19,4 +19,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="CudaConnectedComponents\cuda_cc_filter_full.cu">
+      <Filter>源文件</Filter>
+    </CudaCompile>
+  </ItemGroup>
 </Project>

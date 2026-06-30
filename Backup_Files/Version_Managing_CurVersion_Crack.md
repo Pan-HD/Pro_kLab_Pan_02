@@ -28,7 +28,7 @@
 
   - **GP ONLY**
 
-    - ```BcpFiles -> Files_0605_2026 -> ..._v3```
+    - ```BcpFiles -> Files_0630_2026 -> ..._v1```
 
       - ```
         Experiment on changes in data scale
@@ -36,11 +36,7 @@
         test: 200 imgs
         ```
         
-      - ```Hybrid (GPU + CPU)```
-      
-    - ```BcpFiles -> Files_0624_2026 -> ..._v1```
-    
-      - ```GPU Only, diff to CPU Version```
-
+      - ```All in GPU```
+  
 - 
 

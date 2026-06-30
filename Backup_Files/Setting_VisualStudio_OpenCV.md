@@ -8,7 +8,7 @@
 
   - CMake-4.3.2
 
-  - CUDA-11.6.0
+  - CUDA-12.3.0
 
   - opencv-4.10.0
 
@@ -92,10 +92,28 @@
 
       - ```
         opencv_world4100.lib
+        nppc.lib
+        nppial.lib
+        nppicc.lib
+        nppif.lib
+        nppig.lib
+        nppim.lib
+        nppist.lib
+        nppisu.lib
+        nppitc.lib
+        cudart.lib
         ```
-
+        
+      - ```
+        依赖项确认地址：
+        C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.3\include\
+        C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.3\lib\x64\
+        ```
+      
+      - 
+  
   - 04 - OpenMP 支持
-
+  
     - C/C++　→　语言　→　OpenMP支持
     
       - ```
