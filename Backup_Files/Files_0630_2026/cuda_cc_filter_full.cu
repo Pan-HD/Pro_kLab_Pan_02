@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <string>
-#include "../CommonComponents/SegmentationConfig.h"
+#include "../../CommonComponents/SegmentationConfig.h"
 
 struct CCRegionStat
 {
