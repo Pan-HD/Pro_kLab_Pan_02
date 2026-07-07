@@ -37,7 +37,8 @@ using namespace cv;
 
 // GP parameters
 #define POP_SIZE 100 // Pop_Size of GP
-#define GENERATIONS 10000 // Generation of GP
+// #define GENERATIONS 10000 // Generation of GP
+#define GENERATIONS 2000
 #define OFFSPRING_COUNT 20 // OFFSPRING_COUNT of GP
 #define MUTATION_RATE 0.9 // GP
 #define NUM_TYPE_FUNC 16 // GP
@@ -940,21 +941,43 @@ cv::cuda::GpuMat executeCCFilterCUDA(
     const std::vector<double>& params
 );
 
-cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cuda::GpuMat& input)
+#if USE_CUDA
+struct CudaEvalContext
+{
+    std::vector<cv::cuda::GpuMat> keepAlive;
+
+    cv::cuda::GpuMat hold(const cv::cuda::GpuMat& m)
+    {
+        if (!m.empty()) {
+            keepAlive.push_back(m);
+        }
+        return m;
+    }
+};
+#endif
+
+cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cuda::GpuMat& input, CudaEvalContext& ctx)
 {
     if (!node)
-        return input;
+    {
+        cv::cuda::GpuMat dst;
+        input.copyTo(dst, getCudaStream());
+        return ctx.hold(dst);
+    }
     try
     {
         switch (node->type)
         {
         case TERMINAL_INPUT:
         {
-            return input.clone();
+            // Keep terminal copy on the same CUDA stream used by the rest of executeTreeCUDA.
+            cv::cuda::GpuMat dst;
+            input.copyTo(dst, getCudaStream());
+            return ctx.hold(dst);
         }
         case GAUSSIAN_BLUR:
         {
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             int k =
                 max(1,
@@ -975,7 +998,8 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
 
             // filter->apply(child, dst, gCudaStream);
             filter->apply(child, dst, getCudaStream());
-            return dst;
+            // return dst;
+            return ctx.hold(dst);
         }
         case MED_BLUR:
         {
@@ -983,7 +1007,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             //            return fallbackCPU(node, input);
             //#endif
 
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             int k =
                 max(1,
@@ -1002,7 +1026,8 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             auto filter = getMedianFilter(child.type(), k);
 
             filter->apply(child, dst, getCudaStream());
-            return dst;
+            // return dst;
+            return ctx.hold(dst);
         }
         case BLUR:
         {
@@ -1010,7 +1035,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             //            return fallbackCPU(node, input);
             //#endif
 
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             int k =
                 max(1,
@@ -1028,7 +1053,8 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             */
             auto filter = getBoxFilter(child.type(), child.type(), k);
             filter->apply(child, dst, getCudaStream());
-            return dst;
+            // return dst;
+            return ctx.hold(dst);
         }
         case BILATERAL_FILTER:
         {
@@ -1036,7 +1062,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             //            return fallbackCPU(node, input);
             //#endif
 
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
 
             int d = node->params.size() > 0 ? int(node->params[0]) : 9;
@@ -1065,7 +1091,8 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
                 getCudaStream()
             );
 
-            return dst;
+            // return dst;
+            return ctx.hold(dst);
         }
         //case BILATERAL_FILTER: {
         //    auto child = executeTreeCUDA(node->children[0], input);
@@ -1079,7 +1106,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
         //}
         case SOBEL_X:
         {
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             int k =
                 max(1,
@@ -1107,11 +1134,14 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
                 abs16,
                 getCudaStream());
             abs16.convertTo(grad8, CV_8U, getCudaStream());
-            return grad8;
+            ctx.hold(grad16);
+            ctx.hold(abs16);
+            // return grad8;
+            return ctx.hold(grad8);
         }
         case SOBEL_Y:
         {
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             int k =
                 max(1,
@@ -1139,11 +1169,14 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
                 abs16,
                 getCudaStream());
             abs16.convertTo(grad8, CV_8U, getCudaStream());
-            return grad8;
+            ctx.hold(grad16);
+            ctx.hold(abs16);
+            // return grad8;
+            return ctx.hold(grad8);
         }
         case CANNY:
         {
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             double t1 =
                 node->params.size() > 0 ?
@@ -1160,7 +1193,8 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             */
             auto canny = getCannyEdgeDetector(t1, t2);
             canny->detect(child, dst, getCudaStream());
-            return dst;
+            // return dst;
+            return ctx.hold(dst);
         }
         case DIFF_PROCESS:
         {
@@ -1168,8 +1202,8 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             //            return fallbackCPU(node, input);
             //#endif
 
-            auto a = executeTreeCUDA(node->children[0], input);
-            auto b = executeTreeCUDA(node->children[1], input);
+            auto a = executeTreeCUDA(node->children[0], input, ctx);
+            auto b = executeTreeCUDA(node->children[1], input, ctx);
 
             cv::cuda::GpuMat dst;
 
@@ -1181,21 +1215,23 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
                 CV_8U,
                 getCudaStream());
 
-            return dst;
+            // return dst;
+            return ctx.hold(dst);
         }
         case THRESHOLD:
         {
             auto child =
                 executeTreeCUDA(
                     node->children[0],
-                    input);
+                    input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             double th =
                 node->params.size() > 0 ?
                 node->params[0] : 127.0;
             cv::cuda::GpuMat dst;
             cv::cuda::threshold(child, dst, th, 255, THRESH_BINARY, getCudaStream());
-            return dst;
+            // return dst;
+            return ctx.hold(dst);
         }
         case ERODE:
         {
@@ -1206,7 +1242,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             auto child =
                 executeTreeCUDA(
                     node->children[0],
-                    input);
+                    input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             int r =
                 node->params.size() > 0 ?
@@ -1227,7 +1263,8 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             cv::cuda::GpuMat dst;
             auto filter = getMorphologyFilter(MORPH_ERODE, child.type(), k);
             filter->apply(child, dst, getCudaStream());
-            return dst;
+            // return dst;
+            return ctx.hold(dst);
         }
         case DILATE:
         {
@@ -1238,7 +1275,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             auto child =
                 executeTreeCUDA(
                     node->children[0],
-                    input);
+                    input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             int r =
                 node->params.size() > 0 ?
@@ -1259,69 +1296,81 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             cv::cuda::GpuMat dst;
             auto filter = getMorphologyFilter(MORPH_DILATE, child.type(), k);
             filter->apply(child, dst, getCudaStream());
-            return dst;
+            // return dst;
+            return ctx.hold(dst);
         }
         case CC_FILTER:
         {
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
 
-            return executeCCFilterCUDA(child, node->params);
+            // 关键：executeCCFilterCUDA 内部使用 raw CUDA / NPP / default stream，
+            // 因此进入该函数前，必须先确保 child 在 getCudaStream() 上已经计算完成。
+            getCudaStream().waitForCompletion();
+
+            cv::cuda::GpuMat dst = executeCCFilterCUDA(child, node->params);
+
+            // executeCCFilterCUDA 内部应保证返回前已经同步完成。
+            return ctx.hold(dst);
         }
         case BITWISE_AND:
         {
             auto a =
                 executeTreeCUDA(
                     node->children[0],
-                    input);
+                    input, ctx);
             auto b =
                 executeTreeCUDA(
                     node->children[1],
-                    input);
+                    input, ctx);
             CV_Assert(a.type() == b.type());
             cv::cuda::GpuMat dst;
             cv::cuda::bitwise_and(a, b, dst, cv::noArray(), getCudaStream());
-            return dst;
+            // return dst;
+            return ctx.hold(dst);
         }
         case BITWISE_OR:
         {
             auto a =
                 executeTreeCUDA(
                     node->children[0],
-                    input);
+                    input, ctx);
             auto b =
                 executeTreeCUDA(
                     node->children[1],
-                    input);
+                    input, ctx);
             CV_Assert(a.type() == b.type());
             cv::cuda::GpuMat dst;
             cv::cuda::bitwise_or(a, b, dst, cv::noArray(), getCudaStream());
-            return dst;
+            // return dst;
+            return ctx.hold(dst);
         }
         case BITWISE_XOR:
         {
             auto a =
                 executeTreeCUDA(
                     node->children[0],
-                    input);
+                    input, ctx);
             auto b =
                 executeTreeCUDA(
                     node->children[1],
-                    input);
+                    input, ctx);
             CV_Assert(a.type() == b.type());
             cv::cuda::GpuMat dst;
             cv::cuda::bitwise_xor(a, b, dst, cv::noArray(), getCudaStream());
-            return dst;
+            // return dst;
+            return ctx.hold(dst);
         }
         case BITWISE_NOT:
         {
             auto a =
                 executeTreeCUDA(
                     node->children[0],
-                    input);
+                    input, ctx);
             cv::cuda::GpuMat dst;
             cv::cuda::bitwise_not(a, dst, cv::noArray(), getCudaStream());
-            return dst;
+            // return dst;
+            return ctx.hold(dst);
         }
         /*
             CONTOUR_PROCESS
@@ -1348,10 +1397,8 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
     }
     catch (const cv::Exception& e)
     {
-        cerr << "[CUDA ERROR] "
-            << e.what()
-            << endl;
-        return input.clone();
+        cerr << "[CUDA ERROR] " << e.what() << endl;
+        CV_Error(cv::Error::StsError, e.what());
     }
 }
 
@@ -1621,55 +1668,101 @@ double calScoreByInd(const shared_ptr<TreeNode>& node, Mat imgArr[][2], int numI
 
 #if USE_CUDA
 double calScoreByIndCUDA(const shared_ptr<TreeNode>& node, Mat imgArr[][2], int numInd) {
-    cv::cuda::GpuMat resImg[TRAIN_SIZE];
-    for (int i = 0; i < TRAIN_SIZE; i++)
-    {
-        resImg[i] = executeTreeCUDA(node, gImgArr[i][0]);
+    double sum_f1 = 0.0;
+
+    for (int idxSet = 0; idxSet < TRAIN_SIZE; idxSet++) {
+        CudaEvalContext ctx;
+
+        cv::cuda::GpuMat resImg =
+            executeTreeCUDA(node, gImgArr[idxSet][0], ctx);
+
+        ctx.hold(resImg);
+
+        // isBinaryImageGPU 内部会 waitForCompletion()
+        // 因此 ctx 在同步完成前不会析构
+        if (!isBinaryImageGPU(resImg)) {
+            return 0.01;
+        }
+
+        // calcMetricsOneGPU 内部也会 waitForCompletion()
+        MetricsGPU m = calcMetricsOneGPU(resImg, gTarImgArr[idxSet]);
+
+        int tp = m.tp;
+        int fp = m.fp;
+        int fn = m.fn;
+
+        if (tp == 0) tp++;
+        if (fp == 0) fp++;
+        if (fn == 0) fn++;
+
+        double precision = double(tp) / double(tp + fp);
+        double recall = double(tp) / double(tp + fn);
+        double f1 = calculateF1Score(precision, recall);
+
+        if (numInd != -1) {
+            indFValInfo[numInd][idxSet] = f1;
+        }
+
+        sum_f1 += f1;
     }
-    return calculateMetricsCUDA(resImg, numInd);
+
+    if (numInd != -1) {
+        indFValInfo[numInd][TRAIN_SIZE] = sum_f1;
+    }
+
+    return sum_f1;
 }
 #endif
 
 genType getCurGenInfo(vector<shared_ptr<TreeNode>>& population, Mat imgArr[][2]) {
-    double firstScore = CAL_SCORE(population[0], imgArr, -1);
-    double minFValue = firstScore;
-    double maxFValue = firstScore;
-    double aveFValue = 0.0;
-    double deviation = 0.0;
-    double variance = 0.0;
-    double sumFValue = 0.0;
     double scoreArr[POP_SIZE];
-    int localEliteIdx = 0;
 
-    genType curGenInfo;
+#if USE_CUDA
+    for (int idxInd = 0; idxInd < POP_SIZE; idxInd++) {
+        scoreArr[idxInd] = CAL_SCORE(population[idxInd], imgArr, -1);
+    }
+#else
 #pragma omp parallel for
     for (int idxInd = 0; idxInd < POP_SIZE; idxInd++) {
         scoreArr[idxInd] = CAL_SCORE(population[idxInd], imgArr, -1);
     }
+#endif
+
+    double minFValue = scoreArr[0];
+    double maxFValue = scoreArr[0];
+    double sumFValue = 0.0;
+    double variance = 0.0;
+    int localEliteIdx = 0;
 
     for (int idxInd = 0; idxInd < POP_SIZE; idxInd++) {
         double tmp = scoreArr[idxInd];
         sumFValue += tmp;
+
         if (tmp > maxFValue) {
             maxFValue = tmp;
             localEliteIdx = idxInd;
         }
 
-        if (tmp < minFValue) { minFValue = tmp; }
+        if (tmp < minFValue) {
+            minFValue = tmp;
+        }
     }
 
-    curGenInfo.eliteIndex = localEliteIdx;
-    curGenInfo.eliteTree = cloneTree(population[localEliteIdx]);
-    curGenInfo.eliteFValue = maxFValue;
-    aveFValue = sumFValue / POP_SIZE;
-    curGenInfo.genMinFValue = minFValue;
-    curGenInfo.genAveFValue = aveFValue;
+    double aveFValue = sumFValue / POP_SIZE;
+
     for (int idxInd = 0; idxInd < POP_SIZE; idxInd++) {
         double diff = scoreArr[idxInd] - aveFValue;
         variance += diff * diff;
     }
-    deviation = sqrt(variance / POP_SIZE);
-    curGenInfo.genDevFValue = deviation;
+
+    genType curGenInfo;
+    curGenInfo.eliteIndex = localEliteIdx;
+    curGenInfo.eliteTree = cloneTree(population[localEliteIdx]);
+    curGenInfo.eliteFValue = maxFValue;
+    curGenInfo.genMinFValue = minFValue;
+    curGenInfo.genAveFValue = aveFValue;
+    curGenInfo.genDevFValue = sqrt(variance / POP_SIZE);
+
     return curGenInfo;
 }
 
@@ -2267,10 +2360,65 @@ double calcBias(const vector<genType>& genInfo, int window = BIAS_WINDOW) {
     return bias;
 }
 
+void debugRescoreDrop(
+    const vector<genType>& genInfo,
+    Mat imgArr[][2],
+    int numGen,
+    FILE* fpDebug)
+{
+    if (genInfo.size() < 2) return;
+
+    const genType& prevGen = genInfo[genInfo.size() - 2];
+    const genType& curGen = genInfo[genInfo.size() - 1];
+
+    const double eps = 1e-9;
+
+    if (curGen.eliteFValue + eps >= prevGen.eliteFValue) {
+        return;
+    }
+
+    printf("\n[DROP-DETECTED] gen=%d, prevElite=%.10f, curElite=%.10f\n",
+        numGen + 1,
+        prevGen.eliteFValue,
+        curGen.eliteFValue);
+
+    if (fpDebug) {
+        fprintf(fpDebug,
+            "\n[DROP-DETECTED] gen=%d, prevElite=%.10f, curElite=%.10f\n",
+            numGen + 1,
+            prevGen.eliteFValue,
+            curGen.eliteFValue);
+    }
+
+    printf("[RE-SCORE] previous elite tree:\n");
+    if (fpDebug) fprintf(fpDebug, "[RE-SCORE] previous elite tree:\n");
+
+    for (int r = 0; r < 10; r++) {
+        double s = CAL_SCORE(prevGen.eliteTree, imgArr, -1);
+        printf("  prevElite run %02d: %.10f\n", r, s);
+        if (fpDebug) fprintf(fpDebug, "  prevElite run %02d: %.10f\n", r, s);
+    }
+
+    printf("[RE-SCORE] current elite tree:\n");
+    if (fpDebug) fprintf(fpDebug, "[RE-SCORE] current elite tree:\n");
+
+    for (int r = 0; r < 10; r++) {
+        double s = CAL_SCORE(curGen.eliteTree, imgArr, -1);
+        printf("  curElite  run %02d: %.10f\n", r, s);
+        if (fpDebug) fprintf(fpDebug, "  curElite  run %02d: %.10f\n", r, s);
+    }
+
+    if (fpDebug) fflush(fpDebug);
+}
+
 // =====================================================
 // Top-level GP+GA loop
 // =====================================================
 void multiProcess(Mat imgArr[][2]) {
+#if USE_CUDA
+    omp_set_num_threads(1);
+#endif
+
     Mat resImg[TRAIN_SIZE];
     Mat tarImg[TRAIN_SIZE];
 
@@ -2312,6 +2460,12 @@ void multiProcess(Mat imgArr[][2]) {
     errno_t err6 = fopen_s(&fl_logPrune, "./imgs_0630_2026_v1/output/train_output/log_prune.txt", "a");
     if (err6 != 0 || fl_logPrune == nullptr) {
         perror("Cannot open the file");
+    }
+
+    FILE* fl_debugScore = nullptr;
+    errno_t err7 = fopen_s(&fl_debugScore, "./imgs_0630_2026_v1/output/train_output/debug_rescore.txt", "w");
+    if (err7 != 0 || fl_debugScore == nullptr) {
+        perror("Cannot open debug_rescore.txt");
     }
 
     initParamDesc();
@@ -2429,6 +2583,8 @@ void multiProcess(Mat imgArr[][2]) {
         genInfo.push_back(getCurGenInfo(population, imgArr));
         double bias = calcBias(genInfo);
 
+        debugRescoreDrop(genInfo, imgArr, numGen, fl_debugScore);
+
         /*
             Pruning Module
         */
@@ -2520,10 +2676,16 @@ void multiProcess(Mat imgArr[][2]) {
         }
         else {
             // final generation: record indFValInfo
+#if USE_CUDA
+            for (int idxInd = 0; idxInd < POP_SIZE; idxInd++) {
+                CAL_SCORE(population[idxInd], imgArr, idxInd);
+            }
+#else
 #pragma omp parallel for
             for (int idxInd = 0; idxInd < POP_SIZE; idxInd++) {
                 CAL_SCORE(population[idxInd], imgArr, idxInd);
             }
+#endif
         }
     } // end generation
 
@@ -2546,24 +2708,21 @@ void multiProcess(Mat imgArr[][2]) {
 
         Mat res;
 #if USE_CUDA
-        cv::cuda::GpuMat gsrc;
-        gsrc.upload(imgArr[idxSet][0]);
-        cv::cuda::GpuMat gres = executeTreeCUDA(genInfo.back().eliteTree, gsrc);
+        CudaEvalContext ctx;
+
+        cv::cuda::GpuMat gres =
+            executeTreeCUDA(genInfo.back().eliteTree, gImgArr[idxSet][0], ctx);
+        ctx.hold(gres);
+
+        getCudaStream().waitForCompletion();
         gres.download(res);
 #else
         res = executeTree(genInfo.back().eliteTree, imgArr[idxSet][0]);
 #endif
 
-        /*
-        sprintf_s(imgName_pro[idxSet], "./imgs_0630_2026_v1/output/train_output/img_0%d/Gen-Final.png", idxSet + 1);
-        imwrite(imgName_pro[idxSet], res);
-        Mat concat;
-        vector<Mat> vec = { res, imgArr[idxSet][1] };
-        hconcat(vec, concat);
-        sprintf_s(imgName_final[idxSet], "./imgs_0630_2026_v1/output/train_output/img_0%d/imgs_final.png", idxSet + 1);
-        imwrite(imgName_final[idxSet], concat);
-        */
-        sprintf_s(imgName_pro[idxSet], "./imgs_0630_2026_v1/output/train_output/resImgs/crack_%05d.png", IMG_START_IDX + idxSet);
+        sprintf_s(imgName_pro[idxSet],
+            "./imgs_0630_2026_v1/output/train_output/resImgs/crack_%05d.png",
+            IMG_START_IDX + idxSet);
         imwrite(imgName_pro[idxSet], res);
     }
 
@@ -2573,6 +2732,7 @@ void multiProcess(Mat imgArr[][2]) {
     if (fl_printTree_read) fclose(fl_printTree_read);
     if (fl_logOptiGA) fclose(fl_logOptiGA);
     if (fl_logPrune) fclose(fl_logPrune);
+    if (fl_debugScore) fclose(fl_debugScore);
 }
 
 // =====================================================

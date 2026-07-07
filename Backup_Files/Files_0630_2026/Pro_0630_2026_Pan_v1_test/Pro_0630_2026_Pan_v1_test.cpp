@@ -44,6 +44,42 @@ using namespace cv;
 #define CUDA_EQ_TEST_DILATE    0
 #define CUDA_EQ_TEST_DIFF      0
 
+struct EvalConfig {
+    string condition;
+    int trainSize;
+    int runId;
+    string treePath;
+    string testImageDir;
+    string testMaskDir;
+    string csvPath;
+    string resultImageDir;
+    int testStartIdx = IMG_START_IDX;
+    int testSize = TEST_SIZE;
+};
+
+bool parseArgs(int argc, char** argv, EvalConfig& cfg)
+{
+    if (argc < 9) {
+        cerr << "Usage:\n"
+            << argv[0]
+            << " <condition> <train_size> <run_id> "
+            << "<tree_path> <test_image_dir> <test_mask_dir> "
+            << "<csv_output_path> <result_image_dir>\n";
+        return false;
+    }
+
+    cfg.condition = argv[1];
+    cfg.trainSize = atoi(argv[2]);
+    cfg.runId = atoi(argv[3]);
+    cfg.treePath = argv[4];
+    cfg.testImageDir = argv[5];
+    cfg.testMaskDir = argv[6];
+    cfg.csvPath = argv[7];
+    cfg.resultImageDir = argv[8];
+
+    return true;
+}
+
 enum FilterType { // type-terminal and type-function
     TERMINAL_INPUT,
     GAUSSIAN_BLUR,
@@ -754,7 +790,24 @@ cv::cuda::GpuMat executeCCFilterCUDA(
     const std::vector<double>& params
 );
 
-cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cuda::GpuMat& input)
+struct CudaEvalContext
+{
+    std::vector<cv::cuda::GpuMat> keepAlive;
+
+    cv::cuda::GpuMat hold(const cv::cuda::GpuMat& m)
+    {
+        if (!m.empty()) {
+            keepAlive.push_back(m);
+        }
+        return m;
+    }
+};
+
+//cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cuda::GpuMat& input)
+cv::cuda::GpuMat executeTreeCUDA(
+    const shared_ptr<TreeNode>& node,
+    const cv::cuda::GpuMat& input,
+    CudaEvalContext& ctx)
 {
     if (!node)
         return input;
@@ -764,11 +817,13 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
         {
         case TERMINAL_INPUT:
         {
-            return input.clone();
+            cv::cuda::GpuMat dst;
+            input.copyTo(dst, getCudaStream());
+            return ctx.hold(dst);
         }
         case GAUSSIAN_BLUR:
         {
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             int k =
                 max(1,
@@ -789,7 +844,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
 
             // filter->apply(child, dst, gCudaStream);
             filter->apply(child, dst, getCudaStream());
-            return dst;
+            return ctx.hold(dst);
         }
         case MED_BLUR:
         {
@@ -797,7 +852,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             //            return fallbackCPU(node, input);
             //#endif
 
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             int k =
                 max(1,
@@ -816,7 +871,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             auto filter = getMedianFilter(child.type(), k);
 
             filter->apply(child, dst, getCudaStream());
-            return dst;
+            return ctx.hold(dst);
         }
         case BLUR:
         {
@@ -824,7 +879,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             //            return fallbackCPU(node, input);
             //#endif
 
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             int k =
                 max(1,
@@ -842,7 +897,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             */
             auto filter = getBoxFilter(child.type(), child.type(), k);
             filter->apply(child, dst, getCudaStream());
-            return dst;
+            return ctx.hold(dst);
         }
         case BILATERAL_FILTER:
         {
@@ -850,7 +905,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             //            return fallbackCPU(node, input);
             //#endif
 
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
 
             int d = node->params.size() > 0 ? int(node->params[0]) : 9;
@@ -879,7 +934,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
                 getCudaStream()
             );
 
-            return dst;
+            return ctx.hold(dst);
         }
         //case BILATERAL_FILTER: {
         //    auto child = executeTreeCUDA(node->children[0], input);
@@ -893,7 +948,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
         //}
         case SOBEL_X:
         {
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             int k =
                 max(1,
@@ -920,12 +975,17 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
                 cv::Scalar::all(0),
                 abs16,
                 getCudaStream());
+            //abs16.convertTo(grad8, CV_8U, getCudaStream());
+            //return grad8;
             abs16.convertTo(grad8, CV_8U, getCudaStream());
-            return grad8;
+
+            ctx.hold(grad16);
+            ctx.hold(abs16);
+            return ctx.hold(grad8);
         }
         case SOBEL_Y:
         {
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             int k =
                 max(1,
@@ -952,12 +1012,18 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
                 cv::Scalar::all(0),
                 abs16,
                 getCudaStream());
+            //abs16.convertTo(grad8, CV_8U, getCudaStream());
+            //return grad8;
+
             abs16.convertTo(grad8, CV_8U, getCudaStream());
-            return grad8;
+
+            ctx.hold(grad16);
+            ctx.hold(abs16);
+            return ctx.hold(grad8);
         }
         case CANNY:
         {
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             double t1 =
                 node->params.size() > 0 ?
@@ -974,7 +1040,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             */
             auto canny = getCannyEdgeDetector(t1, t2);
             canny->detect(child, dst, getCudaStream());
-            return dst;
+            return ctx.hold(dst);
         }
         case DIFF_PROCESS:
         {
@@ -982,8 +1048,8 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             //            return fallbackCPU(node, input);
             //#endif
 
-            auto a = executeTreeCUDA(node->children[0], input);
-            auto b = executeTreeCUDA(node->children[1], input);
+            auto a = executeTreeCUDA(node->children[0], input, ctx);
+            auto b = executeTreeCUDA(node->children[1], input, ctx);
 
             cv::cuda::GpuMat dst;
 
@@ -995,21 +1061,21 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
                 CV_8U,
                 getCudaStream());
 
-            return dst;
+            return ctx.hold(dst);
         }
         case THRESHOLD:
         {
             auto child =
                 executeTreeCUDA(
                     node->children[0],
-                    input);
+                    input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             double th =
                 node->params.size() > 0 ?
                 node->params[0] : 127.0;
             cv::cuda::GpuMat dst;
             cv::cuda::threshold(child, dst, th, 255, THRESH_BINARY, getCudaStream());
-            return dst;
+            return ctx.hold(dst);
         }
         case ERODE:
         {
@@ -1020,7 +1086,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             auto child =
                 executeTreeCUDA(
                     node->children[0],
-                    input);
+                    input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             int r =
                 node->params.size() > 0 ?
@@ -1041,7 +1107,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             cv::cuda::GpuMat dst;
             auto filter = getMorphologyFilter(MORPH_ERODE, child.type(), k);
             filter->apply(child, dst, getCudaStream());
-            return dst;
+            return ctx.hold(dst);
         }
         case DILATE:
         {
@@ -1052,7 +1118,7 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             auto child =
                 executeTreeCUDA(
                     node->children[0],
-                    input);
+                    input, ctx);
             CV_Assert(child.type() == CV_8UC1);
             int r =
                 node->params.size() > 0 ?
@@ -1073,69 +1139,75 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
             cv::cuda::GpuMat dst;
             auto filter = getMorphologyFilter(MORPH_DILATE, child.type(), k);
             filter->apply(child, dst, getCudaStream());
-            return dst;
+            return ctx.hold(dst);
         }
         case BITWISE_AND:
         {
             auto a =
                 executeTreeCUDA(
                     node->children[0],
-                    input);
+                    input, ctx);
             auto b =
                 executeTreeCUDA(
                     node->children[1],
-                    input);
+                    input, ctx);
             CV_Assert(a.type() == b.type());
             cv::cuda::GpuMat dst;
             cv::cuda::bitwise_and(a, b, dst, cv::noArray(), getCudaStream());
-            return dst;
+            return ctx.hold(dst);
         }
         case BITWISE_OR:
         {
             auto a =
                 executeTreeCUDA(
                     node->children[0],
-                    input);
+                    input, ctx);
             auto b =
                 executeTreeCUDA(
                     node->children[1],
-                    input);
+                    input, ctx);
             CV_Assert(a.type() == b.type());
             cv::cuda::GpuMat dst;
             cv::cuda::bitwise_or(a, b, dst, cv::noArray(), getCudaStream());
-            return dst;
+            return ctx.hold(dst);
         }
         case BITWISE_XOR:
         {
             auto a =
                 executeTreeCUDA(
                     node->children[0],
-                    input);
+                    input, ctx);
             auto b =
                 executeTreeCUDA(
                     node->children[1],
-                    input);
+                    input, ctx);
             CV_Assert(a.type() == b.type());
             cv::cuda::GpuMat dst;
             cv::cuda::bitwise_xor(a, b, dst, cv::noArray(), getCudaStream());
-            return dst;
+            return ctx.hold(dst);
         }
         case BITWISE_NOT:
         {
             auto a =
                 executeTreeCUDA(
                     node->children[0],
-                    input);
+                    input, ctx);
             cv::cuda::GpuMat dst;
             cv::cuda::bitwise_not(a, dst, cv::noArray(), getCudaStream());
-            return dst;
+            return ctx.hold(dst);
         }
         case CC_FILTER:
         {
-            auto child = executeTreeCUDA(node->children[0], input);
+            auto child = executeTreeCUDA(node->children[0], input, ctx);
             CV_Assert(child.type() == CV_8UC1);
 
-            return executeCCFilterCUDA(child, node->params);
+            // executeCCFilterCUDA 内部使用 raw CUDA / NPP / default stream，
+            // 因此进入前必须确保 OpenCV CUDA stream 已完成。
+            getCudaStream().waitForCompletion();
+
+            cv::cuda::GpuMat dst = executeCCFilterCUDA(child, node->params);
+
+            return ctx.hold(dst);
         }
         default:
         {
@@ -1148,10 +1220,8 @@ cv::cuda::GpuMat executeTreeCUDA(const shared_ptr<TreeNode>& node, const cv::cud
     }
     catch (const cv::Exception& e)
     {
-        cerr << "[CUDA ERROR] "
-            << e.what()
-            << endl;
-        return input.clone();
+        cerr << "[CUDA ERROR] " << e.what() << endl;
+        throw;
     }
 }
 
@@ -1352,6 +1422,41 @@ shared_ptr<TreeNode> loadTreeFromFile(const string& filename)
     return root;
 }
 
+// Adding Parts
+struct MetricsTotal {
+    long long tp = 0;
+    long long fp = 0;
+    long long fn = 0;
+};
+
+// Adding Parts
+static TestScore calcScoreFormal(const MetricsTotal& m)
+{
+    TestScore s{};
+
+    s.precision =
+        (m.tp + m.fp > 0)
+        ? double(m.tp) / double(m.tp + m.fp)
+        : 0.0;
+
+    s.recall =
+        (m.tp + m.fn > 0)
+        ? double(m.tp) / double(m.tp + m.fn)
+        : 0.0;
+
+    s.f1 =
+        (s.precision + s.recall > 0.0)
+        ? 2.0 * s.precision * s.recall / (s.precision + s.recall)
+        : 0.0;
+
+    s.iou =
+        (m.tp + m.fp + m.fn > 0)
+        ? double(m.tp) / double(m.tp + m.fp + m.fn)
+        : 0.0;
+
+    return s;
+}
+
 Metrics calcMetrics(const Mat& pred, const Mat& gt) {
     Metrics m;
     for (int y = 0;y < pred.rows;y++) {
@@ -1489,118 +1594,224 @@ MetricsGPU calcMetricsOneGPU(const cv::cuda::GpuMat& pred, const cv::cuda::GpuMa
     return m;
 }
 
-static TestScore calcScoreSameAsTraining(const MetricsGPU& m) {
-    int tp = m.tp;
-    int fp = m.fp;
-    int fn = m.fn;
-    if (tp == 0) tp++;
-    if (fp == 0) fp++;
-    if (fn == 0) fn++;
-    TestScore s;
-    s.precision = double(tp) / double(tp + fp);
-    s.recall = double(tp) / double(tp + fn);
-    s.f1 = calculateF1Score(s.precision, s.recall);
-    s.iou = double(tp) / double(tp + fp + fn);
-    return s;
-}
-
-void printResult(const Metrics& m, FILE* f1_evaluation)
+bool isBinaryImageGPU(const cv::cuda::GpuMat& img)
 {
-    double precision = double(m.tp) / (m.tp + m.fp + 1e-10);
-    double recall = double(m.tp) / (m.tp + m.fn + 1e-10);
-    double f1 = 2.0 * precision * recall / (precision + recall + 1e-10);
-    double iou = double(m.tp) / (m.tp + m.fp + m.fn + 1e-10);
+    cv::cuda::GpuMat eq0;
+    cv::cuda::GpuMat eq255;
+    cv::cuda::GpuMat validMask;
 
-    printf("\n");
-    printf("Precision : %.6f\n", precision);
-    printf("Recall    : %.6f\n", recall);
-    printf("F1-Score  : %.6f\n", f1);
-    printf("IoU       : %.6f\n", iou);
+    cv::cuda::compare(
+        img,
+        cv::Scalar(0),
+        eq0,
+        cv::CMP_EQ,
+        getCudaStream());
 
-    if (f1_evaluation) {
-        fprintf(f1_evaluation, "Precision : %.6f\n", precision);
-        fprintf(f1_evaluation, "Recall    : %.6f\n", recall);
-        fprintf(f1_evaluation, "F1-Score  : %.6f\n", f1);
-        fprintf(f1_evaluation, "IoU       : %.6f\n", iou);
-    }
+    cv::cuda::compare(
+        img,
+        cv::Scalar(255),
+        eq255,
+        cv::CMP_EQ,
+        getCudaStream());
+
+    cv::cuda::bitwise_or(
+        eq0,
+        eq255,
+        validMask,
+        cv::noArray(),
+        getCudaStream());
+
+    getCudaStream().waitForCompletion();
+
+    int validCount = cv::cuda::countNonZero(validMask);
+    int totalPixels = img.rows * img.cols;
+
+    return validCount == totalPixels;
 }
 
-int main(void) {
-    FILE* fl_evaluation = nullptr;
-    errno_t err = fopen_s(&fl_evaluation, "./imgs_0630_2026_v1/output/test_output/evaluation.txt", "a");
-    if (err != 0 || fl_evaluation == nullptr) {
-        perror("Cannot open the file");
+bool fileExists(const string& path)
+{
+    ifstream f(path);
+    return f.good();
+}
+
+bool appendCsvResult(
+    const EvalConfig& cfg,
+    const MetricsTotal& total,
+    const TestScore& s,
+    int imageCount,
+    int invalidBinaryCount)
+{
+    bool needHeader = !fileExists(cfg.csvPath);
+
+    ofstream fout(cfg.csvPath, ios::app);
+    if (!fout.is_open()) {
+        cerr << "[ERROR] Cannot open CSV: " << cfg.csvPath << endl;
+        return false;
+    }
+
+    if (needHeader) {
+        fout << "condition,train_size,run_id,test_start_idx,test_size,"
+            << "image_count,tp,fp,fn,"
+            << "precision,recall,f1,iou,"
+            << "invalid_binary_count,tree_path\n";
+    }
+
+    fout << cfg.condition << ","
+        << cfg.trainSize << ","
+        << cfg.runId << ","
+        << cfg.testStartIdx << ","
+        << cfg.testSize << ","
+        << imageCount << ","
+        << total.tp << ","
+        << total.fp << ","
+        << total.fn << ","
+        << s.precision << ","
+        << s.recall << ","
+        << s.f1 << ","
+        << s.iou << ","
+        << invalidBinaryCount << ","
+        << cfg.treePath << "\n";
+
+    return true;
+}
+
+int main(int argc, char** argv)
+{
+    EvalConfig cfg;
+    if (!parseArgs(argc, argv, cfg)) {
+        return 1;
     }
 
     initParamDesc();
     initParamDesc_safeVal();
 
-    auto eliteTree = loadTreeFromFile("./imgs_0630_2026_v1/input/test/elite_tree_gp/printed_tree_sys.txt");
+    auto eliteTree = loadTreeFromFile(cfg.treePath);
     if (!eliteTree) {
-        printf("Load Tree Error\n");
-        return -1;
+        cerr << "[ERROR] Load tree failed: " << cfg.treePath << endl;
+        return 1;
     }
 
-    double sumPrecision = 0.0;
-    double sumRecall = 0.0;
-    double sumF1 = 0.0;
-    double sumIoU = 0.0;
+    MetricsTotal total;
     int imageCount = 0;
+    int invalidBinaryCount = 0;
 
-    // Metrics total;
-    for (int i = 0; i < TEST_SIZE; i++) {
-        char imgName[256];
-        char gtName[256];
-        sprintf_s(imgName, "./imgs_0630_2026_v1/input/test/images/crack_%05d.png", IMG_START_IDX + i);
-        sprintf_s(gtName, "./imgs_0630_2026_v1/input/test/masks/crack_%05d.png", IMG_START_IDX + i);
+    for (int i = 0; i < cfg.testSize; i++) {
+        char imgName[512];
+        char gtName[512];
+        char outName[512];
+
+        snprintf(
+            imgName,
+            sizeof(imgName),
+            "%s/crack_%05d.png",
+            cfg.testImageDir.c_str(),
+            cfg.testStartIdx + i);
+
+        snprintf(
+            gtName,
+            sizeof(gtName),
+            "%s/crack_%05d.png",
+            cfg.testMaskDir.c_str(),
+            cfg.testStartIdx + i);
+
+        snprintf(
+            outName,
+            sizeof(outName),
+            "%s/res_%05d.png",
+            cfg.resultImageDir.c_str(),
+            cfg.testStartIdx + i);
+
         Mat src = imread(imgName, IMREAD_GRAYSCALE);
         Mat gt = imread(gtName, IMREAD_GRAYSCALE);
 
-        cv::cuda::GpuMat gGT;
-        gGT.upload(gt);
+        if (src.empty()) {
+            cerr << "[ERROR] Cannot read test image: " << imgName << endl;
+            return 1;
+        }
+
+        if (gt.empty()) {
+            cerr << "[ERROR] Cannot read test mask: " << gtName << endl;
+            return 1;
+        }
+
+        if (src.size() != gt.size()) {
+            cerr << "[ERROR] Size mismatch: "
+                << imgName << " and " << gtName << endl;
+            return 1;
+        }
+
+        if (src.type() != CV_8UC1 || gt.type() != CV_8UC1) {
+            cerr << "[ERROR] Image type must be CV_8UC1: "
+                << imgName << " / " << gtName << endl;
+            return 1;
+        }
+
         cv::cuda::GpuMat gsrc;
-        gsrc.upload(src);
+        cv::cuda::GpuMat gGT;
 
-        cv::cuda::GpuMat gres = executeTreeCUDA(eliteTree, gsrc);
+        gsrc.upload(src, getCudaStream());
+        gGT.upload(gt, getCudaStream());
 
-        Mat pred;
-        gres.download(pred);
-        char outName[256];
-        sprintf_s(outName, "./imgs_0630_2026_v1/output/test_output/resImgs/res_%05d.png", IMG_START_IDX + i);
-        imwrite(outName, pred);
+        CudaEvalContext ctx;
+
+        cv::cuda::GpuMat gres;
+
+        try {
+            gres = executeTreeCUDA(eliteTree, gsrc, ctx);
+            ctx.hold(gres);
+            getCudaStream().waitForCompletion();
+        }
+        catch (const cv::Exception& e) {
+            cerr << "[ERROR] CUDA evaluation failed at image "
+                << (cfg.testStartIdx + i)
+                << ": " << e.what() << endl;
+            return 1;
+        }
+
+        if (!isBinaryImageGPU(gres)) {
+            cerr << "[ERROR] Non-binary prediction at image "
+                << (cfg.testStartIdx + i) << endl;
+            invalidBinaryCount++;
+            return 1;
+        }
 
         MetricsGPU m = calcMetricsOneGPU(gres, gGT);
-        TestScore score = calcScoreSameAsTraining(m);
 
-        sumPrecision += score.precision;
-        sumRecall += score.recall;
-        sumF1 += score.f1;
-        sumIoU += score.iou;
-        imageCount++;
-
-        /*
-        Metrics m = calcMetrics(pred, gt);
         total.tp += m.tp;
         total.fp += m.fp;
         total.fn += m.fn;
-        */
 
+        Mat pred;
+        gres.download(pred, getCudaStream());
+        getCudaStream().waitForCompletion();
+
+        if (!imwrite(outName, pred)) {
+            cerr << "[ERROR] Failed to write result image: "
+                << outName << endl;
+            return 1;
+        }
+
+        imageCount++;
     }
 
-    double avgPrecision = sumPrecision / imageCount;
-    double avgRecall = sumRecall / imageCount;
-    double avgF1 = sumF1 / imageCount;
-    double avgIoU = sumIoU / imageCount;
+    TestScore finalScore = calcScoreFormal(total);
 
-    if (fl_evaluation) {
-        fprintf(fl_evaluation, "Precision : %.6f\n", avgPrecision);
-        fprintf(fl_evaluation, "Recall    : %.6f\n", avgRecall);
-        fprintf(fl_evaluation, "F1-Score  : %.6f\n", avgF1);
-        fprintf(fl_evaluation, "IoU       : %.6f\n", avgIoU);
+    cout << "Condition : " << cfg.condition << endl;
+    cout << "TrainSize : " << cfg.trainSize << endl;
+    cout << "RunID     : " << cfg.runId << endl;
+    cout << "Images    : " << imageCount << endl;
+    cout << "TP        : " << total.tp << endl;
+    cout << "FP        : " << total.fp << endl;
+    cout << "FN        : " << total.fn << endl;
+    cout << "Precision : " << finalScore.precision << endl;
+    cout << "Recall    : " << finalScore.recall << endl;
+    cout << "F1        : " << finalScore.f1 << endl;
+    cout << "IoU       : " << finalScore.iou << endl;
+
+    if (!appendCsvResult(cfg, total, finalScore, imageCount, invalidBinaryCount)) {
+        return 1;
     }
 
-    // printResult(total, fl_evaluation);
-
-    if (fl_evaluation) fclose(fl_evaluation);
     return 0;
 }

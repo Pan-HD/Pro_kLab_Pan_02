@@ -18,10 +18,35 @@ struct CCRegionStat
     int ymax;
 };
 
-__global__ void initCCStatsKernel(CCRegionStat* stats, int maxLabel)
+__global__ void makeNppForegroundMaskKernel(
+    const unsigned char* src,
+    size_t srcStep,
+    int width,
+    int height,
+    unsigned char* dst,
+    size_t dstStep)
+{
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    if (x >= width || y >= height) return;
+
+    unsigned char v = src[y * srcStep + x];
+
+#if FG_PIXEL == 255
+    // NPP labels non-zero pixels. In white-foreground mode, keep all non-zero
+    // pixels as foreground, matching the old behavior but forcing a binary mask.
+    dst[y * dstStep + x] = (v != 0) ? 255 : 0;
+#else
+    // NPP labels non-zero pixels. In black-foreground mode, invert the mask so
+    // the logical foreground becomes non-zero before NPP connected components.
+    dst[y * dstStep + x] = (v == 0) ? 255 : 0;
+#endif
+}
+
+__global__ void initCCStatsKernel(CCRegionStat* stats, int labelLimit)
 {
     int id = blockIdx.x * blockDim.x + threadIdx.x;
-    if (id > maxLabel) return;
+    if (id > labelLimit) return;
 
     stats[id].area = 0;
     stats[id].xmin = INT_MAX;
@@ -34,6 +59,7 @@ __global__ void computeCCStatsKernel(
     const Npp32u* label,
     int width,
     int height,
+    int labelLimit,
     CCRegionStat* stats)
 {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -44,7 +70,10 @@ __global__ void computeCCStatsKernel(
     int idx = y * width + x;
     Npp32u id = label[idx];
 
-    if (id == 0) return;
+    // Guard against any uncompressed or invalid label value. This should not
+    // happen after nppiCompressMarkerLabelsUF, but without the guard a single
+    // stray label can write out of bounds and make fitness non-deterministic.
+    if (id == 0 || id > (Npp32u)labelLimit) return;
 
     atomicAdd(&stats[id].area, 1);
     atomicMin(&stats[id].xmin, x);
@@ -55,13 +84,13 @@ __global__ void computeCCStatsKernel(
 
 __global__ void computeCCRemoveMaskKernel(
     const CCRegionStat* stats,
-    int maxLabel,
+    int labelLimit,
     int minArea,
     float aspectRange,
     unsigned char* removeMask)
 {
     int id = blockIdx.x * blockDim.x + threadIdx.x;
-    if (id > maxLabel) return;
+    if (id > labelLimit) return;
 
     if (id == 0)
     {
@@ -105,6 +134,7 @@ __global__ void generateCCFilteredBinaryKernel(
     const unsigned char* removeMask,
     int width,
     int height,
+    int labelLimit,
     unsigned char* output)
 {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -115,7 +145,7 @@ __global__ void generateCCFilteredBinaryKernel(
     int idx = y * width + x;
     Npp32u id = label[idx];
 
-    if (id == 0 || removeMask[id])
+    if (id == 0 || id > (Npp32u)labelLimit || removeMask[id])
         output[idx] = BG_PIXEL;
     else
         output[idx] = FG_PIXEL;
@@ -148,6 +178,7 @@ cv::cuda::GpuMat executeCCFilterCUDA(
 
     int width = src.cols;
     int height = src.rows;
+    int pixelCount = width * height;
 
     int minArea =
         params.size() > 0
@@ -176,18 +207,26 @@ cv::cuda::GpuMat executeCCFilterCUDA(
 
     try
     {
-        CUDA_CHECK_LOCAL(cudaMalloc(&dSrcLinear, width * height * sizeof(Npp8u)));
-        CUDA_CHECK_LOCAL(cudaMalloc(&dLabel, width * height * sizeof(Npp32u)));
-        CUDA_CHECK_LOCAL(cudaMalloc(&dOutput, width * height * sizeof(Npp8u)));
+        CUDA_CHECK_LOCAL(cudaMalloc(&dSrcLinear, pixelCount * sizeof(Npp8u)));
+        CUDA_CHECK_LOCAL(cudaMalloc(&dLabel, pixelCount * sizeof(Npp32u)));
+        CUDA_CHECK_LOCAL(cudaMalloc(&dOutput, pixelCount * sizeof(Npp8u)));
 
-        CUDA_CHECK_LOCAL(cudaMemcpy2D(
-            dSrcLinear,
-            srcStep,
+        dim3 block2D(16, 16);
+        dim3 grid2D(
+            (width + block2D.x - 1) / block2D.x,
+            (height + block2D.y - 1) / block2D.y);
+
+        makeNppForegroundMaskKernel<<<grid2D, block2D>>>(
             src.ptr<Npp8u>(),
             src.step,
-            srcStep,
+            width,
             height,
-            cudaMemcpyDeviceToDevice));
+            dSrcLinear,
+            srcStep);
+        CUDA_CHECK_LOCAL(cudaGetLastError());
+        CUDA_CHECK_LOCAL(cudaDeviceSynchronize());
+
+        CUDA_CHECK_LOCAL(cudaMemset(dLabel, 0, pixelCount * sizeof(Npp32u)));
 
         int labelBufferSize = 0;
         NPP_CHECK_LOCAL(nppiLabelMarkersUFGetBufferSize_32u_C1R(roi, &labelBufferSize));
@@ -206,7 +245,7 @@ cv::cuda::GpuMat executeCCFilterCUDA(
         CUDA_CHECK_LOCAL(cudaFree(dLabelBuffer));
         dLabelBuffer = nullptr;
 
-        int nStartingNumber = width * height;
+        int nStartingNumber = pixelCount;
         int compressBufferSize = 0;
 
         NPP_CHECK_LOCAL(nppiCompressMarkerLabelsGetBufferSize_32u_C1R(
@@ -232,8 +271,6 @@ cv::cuda::GpuMat executeCCFilterCUDA(
         {
             cv::cuda::GpuMat out(height, width, CV_8UC1);
             out.setTo(cv::Scalar(BG_PIXEL));
-
-            // 确保 out.setTo() 已经完成，再返回。
             CUDA_CHECK_LOCAL(cudaDeviceSynchronize());
 
             cudaFree(dSrcLinear);
@@ -243,44 +280,43 @@ cv::cuda::GpuMat executeCCFilterCUDA(
             return out;
         }
 
-        CUDA_CHECK_LOCAL(cudaMalloc(&dStats, (maxLabel + 1) * sizeof(CCRegionStat)));
-        CUDA_CHECK_LOCAL(cudaMalloc(&dRemoveMask, (maxLabel + 1) * sizeof(unsigned char)));
+        // Allocate by the theoretical label limit instead of maxLabel. This is a
+        // defensive fix: if an NPP/compression edge case leaves a label larger
+        // than maxLabel, the old code would access dStats/removeMask out of bounds.
+        int labelLimit = nStartingNumber;
+
+        CUDA_CHECK_LOCAL(cudaMalloc(&dStats, (labelLimit + 1) * sizeof(CCRegionStat)));
+        CUDA_CHECK_LOCAL(cudaMalloc(&dRemoveMask, (labelLimit + 1) * sizeof(unsigned char)));
 
         int block1D = 256;
-        int grid1D = (maxLabel + 1 + block1D - 1) / block1D;
+        int grid1D = (labelLimit + 1 + block1D - 1) / block1D;
 
-        initCCStatsKernel << <grid1D, block1D >> > (dStats, maxLabel);
+        initCCStatsKernel<<<grid1D, block1D>>>(dStats, labelLimit);
         CUDA_CHECK_LOCAL(cudaGetLastError());
 
-        dim3 block2D(16, 16);
-        dim3 grid2D(
-            (width + block2D.x - 1) / block2D.x,
-            (height + block2D.y - 1) / block2D.y);
-
-        computeCCStatsKernel << <grid2D, block2D >> > (
+        computeCCStatsKernel<<<grid2D, block2D>>>(
             dLabel,
             width,
             height,
+            labelLimit,
             dStats);
-
         CUDA_CHECK_LOCAL(cudaGetLastError());
 
-        computeCCRemoveMaskKernel << <grid1D, block1D >> > (
+        computeCCRemoveMaskKernel<<<grid1D, block1D>>>(
             dStats,
-            maxLabel,
+            labelLimit,
             minArea,
             aspectRange,
             dRemoveMask);
-
         CUDA_CHECK_LOCAL(cudaGetLastError());
 
-        generateCCFilteredBinaryKernel << <grid2D, block2D >> > (
+        generateCCFilteredBinaryKernel<<<grid2D, block2D>>>(
             dLabel,
             dRemoveMask,
             width,
             height,
+            labelLimit,
             dOutput);
-
         CUDA_CHECK_LOCAL(cudaGetLastError());
         CUDA_CHECK_LOCAL(cudaDeviceSynchronize());
 
@@ -294,8 +330,6 @@ cv::cuda::GpuMat executeCCFilterCUDA(
             width * sizeof(Npp8u),
             height,
             cudaMemcpyDeviceToDevice));
-
-        // 关键：确保 out 已经完整写入，再释放 dOutput 等 raw pointer。
         CUDA_CHECK_LOCAL(cudaDeviceSynchronize());
 
         cudaFree(dSrcLinear);

@@ -20,7 +20,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="Backup_Files\Files_0630_2026\cuda_cc_filter_full.cu">
+    <CudaCompile Include="Backup_Files\Files_0630_2026\cuda_cc_filter_full_fixed_01.cu">
       <Filter>源文件</Filter>
     </CudaCompile>
   </ItemGroup>
