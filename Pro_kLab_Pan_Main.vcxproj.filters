@@ -20,7 +20,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="Backup_Files\Files_0630_2026\cuda_cc_filter_full_fixed_01.cu">
+    <CudaCompile Include="CUDA_Components\cuda_metrics_fused.cu">
+      <Filter>源文件</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Backup_Files\Files_0630_2026\CUDA_CC_FILTER\cuda_cc_filter_deterministic_ccl.cu">
       <Filter>源文件</Filter>
     </CudaCompile>
   </ItemGroup>

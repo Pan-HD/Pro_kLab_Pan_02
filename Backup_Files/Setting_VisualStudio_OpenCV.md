@@ -109,9 +109,7 @@
         C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.3\include\
         C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.3\lib\x64\
         ```
-      
-      - 
-  
+    
   - 04 - OpenMP 支持
   
     - C/C++　→　语言　→　OpenMP支持
@@ -130,6 +128,19 @@
     - ```
       把 opencv_world4100.dll 复制到 Pro_Graph_kLab.exe 所在的目录: 
       F:\ComputerScience\OpenCV_VS_Pro\Pro_Graph_kLab\x64\Release
+      ```
+    
+  - 06 - .cu 文件配置
+  
+    - ```
+      解决资源管理器
+        Pro_KLab_Pan_Main 
+          (right click) 生成依赖项 -> 生成自定义
+            CUDA xx -> √
+          源文件
+            (right click) 添加 -> 现有项
+              cuda_cc_filter_fixed_01.cu
+                (right click) 属性 -> 常规 -> 项类型 -> CUDA C/C++ (To Confirm)
       ```
   
   
