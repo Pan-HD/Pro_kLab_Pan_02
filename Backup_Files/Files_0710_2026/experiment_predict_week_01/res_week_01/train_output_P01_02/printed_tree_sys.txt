@@ -1,0 +1,15 @@
+THRESHOLD (9.00)
+    BILATERAL_FILTER (9.00, 75.00, 75.00)
+        DIFF_PROCESS
+            SOBEL_Y (3.00)
+                TERMINAL_INPUT
+            BITWISE_XOR
+                BLUR (19.00)
+                    CANNY (100.00, 200.00)
+                        BITWISE_OR
+                            CANNY (100.00, 200.00)
+                                CANNY (100.00, 200.00)
+                                    ERODE (1.00)
+                                        TERMINAL_INPUT
+                            TERMINAL_INPUT
+                TERMINAL_INPUT

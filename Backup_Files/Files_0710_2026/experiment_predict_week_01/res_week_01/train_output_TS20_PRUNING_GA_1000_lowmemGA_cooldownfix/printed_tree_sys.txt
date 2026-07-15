@@ -1,0 +1,18 @@
+MED_BLUR (9.00)
+    DILATE (4.67)
+        THRESHOLD (207.00)
+            BILATERAL_FILTER (9.00, 75.00, 75.00)
+                BILATERAL_FILTER (31.00, 47.16, 36.64)
+                    BITWISE_XOR
+                        TERMINAL_INPUT
+                        BITWISE_XOR
+                            DIFF_PROCESS
+                                TERMINAL_INPUT
+                                SOBEL_X (4.77)
+                                    TERMINAL_INPUT
+                            MED_BLUR (5.00)
+                                CC_FILTER (61.18, 53.33)
+                                    CANNY (108.58, 51.80)
+                                        BITWISE_XOR
+                                            TERMINAL_INPUT
+                                            TERMINAL_INPUT

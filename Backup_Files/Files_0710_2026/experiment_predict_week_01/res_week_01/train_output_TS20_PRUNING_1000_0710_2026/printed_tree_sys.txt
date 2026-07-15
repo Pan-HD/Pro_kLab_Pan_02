@@ -1,0 +1,19 @@
+THRESHOLD (9.00)
+    GAUSSIAN_BLUR (5.00, 1.50)
+        DIFF_PROCESS
+            DIFF_PROCESS
+                BITWISE_NOT
+                    TERMINAL_INPUT
+                BITWISE_XOR
+                    ERODE (1.00)
+                        TERMINAL_INPUT
+                    ERODE (1.00)
+                        BILATERAL_FILTER (9.00, 75.00, 75.00)
+                            BLUR (19.00)
+                                BILATERAL_FILTER (9.00, 75.00, 75.00)
+                                    GAUSSIAN_BLUR (5.00, 1.50)
+                                        BILATERAL_FILTER (9.00, 75.00, 75.00)
+                                            SOBEL_X (3.00)
+                                                TERMINAL_INPUT
+            MED_BLUR (19.00)
+                TERMINAL_INPUT

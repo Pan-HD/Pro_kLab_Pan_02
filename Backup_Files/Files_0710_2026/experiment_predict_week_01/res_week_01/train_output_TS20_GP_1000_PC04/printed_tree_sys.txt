@@ -1,0 +1,39 @@
+THRESHOLD (9.00)
+    MED_BLUR (19.00)
+        BITWISE_OR
+            SOBEL_X (3.00)
+                GAUSSIAN_BLUR (5.00, 1.50)
+                    THRESHOLD (9.00)
+                        BITWISE_AND
+                            BLUR (19.00)
+                                THRESHOLD (9.00)
+                                    BITWISE_XOR
+                                        GAUSSIAN_BLUR (5.00, 1.50)
+                                            SOBEL_Y (3.00)
+                                                TERMINAL_INPUT
+                                        SOBEL_X (3.00)
+                                            TERMINAL_INPUT
+                            TERMINAL_INPUT
+            CC_FILTER (5.00, 3.00)
+                DIFF_PROCESS
+                    ERODE (1.00)
+                        BITWISE_AND
+                            BLUR (19.00)
+                                THRESHOLD (9.00)
+                                    BITWISE_XOR
+                                        GAUSSIAN_BLUR (5.00, 1.50)
+                                            TERMINAL_INPUT
+                                        SOBEL_X (3.00)
+                                            TERMINAL_INPUT
+                            TERMINAL_INPUT
+                    CANNY (100.00, 200.00)
+                        THRESHOLD (9.00)
+                            GAUSSIAN_BLUR (5.00, 1.50)
+                                DIFF_PROCESS
+                                    SOBEL_X (3.00)
+                                        BITWISE_OR
+                                            BITWISE_OR
+                                                TERMINAL_INPUT
+                                                TERMINAL_INPUT
+                                            TERMINAL_INPUT
+                                    TERMINAL_INPUT

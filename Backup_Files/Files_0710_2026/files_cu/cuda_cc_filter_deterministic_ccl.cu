@@ -8,7 +8,7 @@
 #include <string>
 #include <cstdio>
 
-#include "../../CommonComponents/SegmentationConfig.h"
+#include "../../../CommonComponents/SegmentationConfig.h"
 
 // =============================================================
 // Stable deterministic CUDA connected-component filter

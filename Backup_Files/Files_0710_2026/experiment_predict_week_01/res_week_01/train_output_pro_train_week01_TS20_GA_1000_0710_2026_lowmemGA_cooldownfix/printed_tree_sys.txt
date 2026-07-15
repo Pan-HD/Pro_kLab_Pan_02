@@ -1,0 +1,19 @@
+BITWISE_NOT
+    DIFF_PROCESS
+        THRESHOLD (76.00)
+            GAUSSIAN_BLUR (11.00, 12.65)
+                BLUR (15.00)
+                    BILATERAL_FILTER (31.00, 31.97, 62.94)
+                        TERMINAL_INPUT
+        CANNY (67.74, 168.34)
+            DIFF_PROCESS
+                GAUSSIAN_BLUR (27.00, 20.18)
+                    BITWISE_AND
+                        CC_FILTER (95.29, 99.61)
+                            BLUR (31.00)
+                                THRESHOLD (222.00)
+                                    TERMINAL_INPUT
+                        BILATERAL_FILTER (31.00, 71.70, 93.32)
+                            TERMINAL_INPUT
+                BILATERAL_FILTER (31.00, 14.44, 36.64)
+                    TERMINAL_INPUT

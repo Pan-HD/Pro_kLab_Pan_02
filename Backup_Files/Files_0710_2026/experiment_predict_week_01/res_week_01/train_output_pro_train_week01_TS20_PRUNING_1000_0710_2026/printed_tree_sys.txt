@@ -1,0 +1,20 @@
+THRESHOLD (9.00)
+    GAUSSIAN_BLUR (5.00, 1.50)
+        BLUR (19.00)
+            BITWISE_AND
+                BITWISE_OR
+                    BITWISE_NOT
+                        DILATE (1.00)
+                            TERMINAL_INPUT
+                    BITWISE_NOT
+                        TERMINAL_INPUT
+                DIFF_PROCESS
+                    SOBEL_Y (3.00)
+                        GAUSSIAN_BLUR (5.00, 1.50)
+                            BITWISE_XOR
+                                BLUR (19.00)
+                                    TERMINAL_INPUT
+                                SOBEL_X (3.00)
+                                    CANNY (100.00, 200.00)
+                                        TERMINAL_INPUT
+                    TERMINAL_INPUT

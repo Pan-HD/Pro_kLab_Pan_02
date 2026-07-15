@@ -128,8 +128,8 @@
     <ClCompile Include="Pro_kLab_Pan_Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="Backup_Files\Files_0630_2026\CUDA_CC_FILTER\cuda_cc_filter_deterministic_ccl.cu" />
-    <CudaCompile Include="CUDA_Components\cuda_metrics_fused.cu" />
+    <CudaCompile Include="Backup_Files\Files_0710_2026\files_cu\cuda_cc_filter_deterministic_ccl.cu" />
+    <CudaCompile Include="Backup_Files\Files_0710_2026\files_cu\cuda_metrics_fused.cu" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

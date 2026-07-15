@@ -1,0 +1,16 @@
+THRESHOLD (9.00)
+    THRESHOLD (9.00)
+        MED_BLUR (19.00)
+            BILATERAL_FILTER (9.00, 75.00, 75.00)
+                BLUR (19.00)
+                    DIFF_PROCESS
+                        SOBEL_Y (3.00)
+                            BILATERAL_FILTER (9.00, 75.00, 75.00)
+                                CANNY (100.00, 200.00)
+                                    THRESHOLD (9.00)
+                                        SOBEL_Y (3.00)
+                                            THRESHOLD (9.00)
+                                                TERMINAL_INPUT
+                        DILATE (1.00)
+                            SOBEL_X (3.00)
+                                TERMINAL_INPUT
