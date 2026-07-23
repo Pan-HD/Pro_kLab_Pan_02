@@ -1,0 +1,67 @@
+THRESHOLD (9.00)
+    GAUSSIAN_BLUR (5.00, 1.50)
+        BILATERAL_FILTER (9.00, 75.00, 75.00)
+            BITWISE_AND
+                SOBEL_Y (3.00)
+                    BITWISE_XOR
+                        DIFF_PROCESS
+                            BLUR (19.00)
+                                SOBEL_X (3.00)
+                                    GAUSSIAN_BLUR (5.00, 1.50)
+                                        SOBEL_X (3.00)
+                                            THRESHOLD (9.00)
+                                                TERMINAL_INPUT
+                            BITWISE_OR
+                                BITWISE_XOR
+                                    BITWISE_AND
+                                        BLUR (19.00)
+                                            BLUR (19.00)
+                                                TERMINAL_INPUT
+                                        BITWISE_XOR
+                                            BITWISE_AND
+                                                TERMINAL_INPUT
+                                                TERMINAL_INPUT
+                                            SOBEL_X (3.00)
+                                                TERMINAL_INPUT
+                                    CANNY (100.00, 200.00)
+                                        BILATERAL_FILTER (9.00, 75.00, 75.00)
+                                            TERMINAL_INPUT
+                                DIFF_PROCESS
+                                    MED_BLUR (19.00)
+                                        DILATE (3.00)
+                                            MED_BLUR (19.00)
+                                                TERMINAL_INPUT
+                                    TERMINAL_INPUT
+                        BITWISE_NOT
+                            BITWISE_OR
+                                BITWISE_OR
+                                    CANNY (100.00, 200.00)
+                                        BITWISE_XOR
+                                            CC_FILTER (5.00, 3.00)
+                                                TERMINAL_INPUT
+                                            TERMINAL_INPUT
+                                    GAUSSIAN_BLUR (5.00, 1.50)
+                                        SOBEL_X (3.00)
+                                            BILATERAL_FILTER (9.00, 75.00, 75.00)
+                                                TERMINAL_INPUT
+                                THRESHOLD (9.00)
+                                    BLUR (19.00)
+                                        CANNY (100.00, 200.00)
+                                            BILATERAL_FILTER (9.00, 75.00, 75.00)
+                                                TERMINAL_INPUT
+                DIFF_PROCESS
+                    BITWISE_OR
+                        BLUR (19.00)
+                            BLUR (19.00)
+                                SOBEL_Y (3.00)
+                                    GAUSSIAN_BLUR (5.00, 1.50)
+                                        SOBEL_X (3.00)
+                                            THRESHOLD (9.00)
+                                                TERMINAL_INPUT
+                        MED_BLUR (19.00)
+                            BLUR (19.00)
+                                BLUR (19.00)
+                                    DILATE (3.00)
+                                        BLUR (19.00)
+                                            TERMINAL_INPUT
+                    TERMINAL_INPUT

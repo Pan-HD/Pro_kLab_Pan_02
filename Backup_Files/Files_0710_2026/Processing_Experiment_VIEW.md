@@ -92,4 +92,63 @@ P-03. TRAIN_SIZE=20，GP + GA，1000代，1 run
   pro_train_week01_TS20_PRUNING_1000_0710_2026.cpp
   ```
   
+
+## 第 2 周 (EXPERIMENT-01)
+
+优先启动长任务：
+
+```text
+TRAIN_SIZE=20
+```
+
+完成目标：
+
+```text
+TRAIN_SIZE=5/10/20 各 6 run
+```
+
+**运行记录：**
+
+```
+TS05
+  RUN01 finished
+      pc00(PAN_NOTEBOOK)
+  RUN02 finished (recovered)
+      pc02(YANG_MAIN)
+      END_TIME_PREDICT: xx:xx, xx-xx
+  RUN03 finished
+      pc00(PAN_NOTEBOOK)
+      END_TIME_PREDICT: xx:xx, 07-xx
+  RUN04 finished
+      pc02(YANG_MAIN)
+      END_TIME_PREDICT: xx:xx, xx-xx
+  RUN05 ing
+      pc00(PAN_NOTEBOOK)
+  RUN06 ing
+      pc02(YANG_MAIN)
+      END_TIME_PREDICT: xx:xx, xx-xx
+TS10
+  RUN01 finished
+      pc03(YANG_NOTEBOOK)
+      END_TIME_PREDICT: 21:30, 07-17
+  RUN02 finished
+      pc03(YANG_NOTEBOOK)
+      END_TIME_PREDICT: xx:xx, 07-xx
+  RUN03 ing
+      pc03(YANG_NOTEBOOK)
+      END_TIME_PREDICT: 21:30, 07-17
+  RUN04
   
+  RUN05
+  RUN06
+TS20
+  RUN01 finished
+    pc01(PAN_MAIN)
+    END_TIME_PREDICT: 00:00, 07-23
+  RUN02
+  RUN03
+  RUN04
+  RUN05
+  RUN06
+```
+

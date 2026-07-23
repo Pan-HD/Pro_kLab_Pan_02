@@ -1,0 +1,55 @@
+MED_BLUR (19.00)
+    BITWISE_OR
+        MED_BLUR (19.00)
+            THRESHOLD (9.00)
+                SOBEL_Y (3.00)
+                    GAUSSIAN_BLUR (5.00, 1.50)
+                        CANNY (100.00, 200.00)
+                            GAUSSIAN_BLUR (5.00, 1.50)
+                                BITWISE_XOR
+                                    BITWISE_AND
+                                        BITWISE_OR
+                                            GAUSSIAN_BLUR (5.00, 1.50)
+                                                TERMINAL_INPUT
+                                            BLUR (19.00)
+                                                TERMINAL_INPUT
+                                        MED_BLUR (19.00)
+                                            GAUSSIAN_BLUR (5.00, 1.50)
+                                                TERMINAL_INPUT
+                                    BILATERAL_FILTER (9.00, 75.00, 75.00)
+                                        CANNY (100.00, 200.00)
+                                            SOBEL_X (3.00)
+                                                TERMINAL_INPUT
+        DILATE (3.00)
+            CANNY (100.00, 200.00)
+                BITWISE_OR
+                    MED_BLUR (19.00)
+                        ERODE (3.00)
+                            TERMINAL_INPUT
+                    DIFF_PROCESS
+                        SOBEL_Y (3.00)
+                            CC_FILTER (5.00, 3.00)
+                                CANNY (100.00, 200.00)
+                                    THRESHOLD (9.00)
+                                        TERMINAL_INPUT
+                        BITWISE_AND
+                            TERMINAL_INPUT
+                            BITWISE_AND
+                                BITWISE_OR
+                                    THRESHOLD (9.00)
+                                        TERMINAL_INPUT
+                                    BILATERAL_FILTER (9.00, 75.00, 75.00)
+                                        DIFF_PROCESS
+                                            BLUR (19.00)
+                                                TERMINAL_INPUT
+                                            CANNY (100.00, 200.00)
+                                                TERMINAL_INPUT
+                                BITWISE_AND
+                                    BITWISE_OR
+                                        BLUR (19.00)
+                                            TERMINAL_INPUT
+                                        ERODE (3.00)
+                                            TERMINAL_INPUT
+                                    GAUSSIAN_BLUR (5.00, 1.50)
+                                        MED_BLUR (19.00)
+                                            TERMINAL_INPUT

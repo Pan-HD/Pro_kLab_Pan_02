@@ -1,0 +1,57 @@
+DILATE (3.00)
+    CANNY (100.00, 200.00)
+        BITWISE_AND
+            THRESHOLD (9.00)
+                ERODE (3.00)
+                    DIFF_PROCESS
+                        BILATERAL_FILTER (9.00, 75.00, 75.00)
+                            SOBEL_Y (3.00)
+                                DIFF_PROCESS
+                                    BLUR (19.00)
+                                        TERMINAL_INPUT
+                                    DIFF_PROCESS
+                                        BLUR (19.00)
+                                            TERMINAL_INPUT
+                                        TERMINAL_INPUT
+                        DIFF_PROCESS
+                            MED_BLUR (19.00)
+                                TERMINAL_INPUT
+                            BLUR (19.00)
+                                SOBEL_Y (3.00)
+                                    SOBEL_Y (3.00)
+                                        ERODE (3.00)
+                                            TERMINAL_INPUT
+            DIFF_PROCESS
+                MED_BLUR (19.00)
+                    BITWISE_OR
+                        MED_BLUR (19.00)
+                            SOBEL_Y (3.00)
+                                BLUR (19.00)
+                                    SOBEL_X (3.00)
+                                        BITWISE_OR
+                                            TERMINAL_INPUT
+                                            TERMINAL_INPUT
+                        BLUR (19.00)
+                            BLUR (19.00)
+                                GAUSSIAN_BLUR (5.00, 1.50)
+                                    BLUR (19.00)
+                                        BLUR (19.00)
+                                            TERMINAL_INPUT
+                BITWISE_OR
+                    THRESHOLD (9.00)
+                        MED_BLUR (19.00)
+                            MED_BLUR (19.00)
+                                MED_BLUR (19.00)
+                                    DIFF_PROCESS
+                                        BITWISE_OR
+                                            BLUR (19.00)
+                                                TERMINAL_INPUT
+                                            TERMINAL_INPUT
+                                        BITWISE_NOT
+                                            SOBEL_X (3.00)
+                                                TERMINAL_INPUT
+                    BITWISE_OR
+                        TERMINAL_INPUT
+                        SOBEL_Y (3.00)
+                            ERODE (3.00)
+                                TERMINAL_INPUT
