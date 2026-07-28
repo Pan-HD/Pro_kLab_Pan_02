@@ -1,0 +1,5 @@
+TS20_mixed_robustdomain_G10000_seed42_partial
+gen=4450
+eliteMean=0.5434395580
+status = stopped for scheduling
+not used in final statistics

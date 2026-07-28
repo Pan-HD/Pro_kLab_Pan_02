@@ -111,41 +111,22 @@ TRAIN_SIZE=5/10/20 各 6 run
 
 ```
 TS05
-  RUN01 finished
-      pc00(PAN_NOTEBOOK)
-  RUN02 finished (recovered)
-      pc02(YANG_MAIN)
-      END_TIME_PREDICT: xx:xx, xx-xx
-  RUN03 finished
-      pc00(PAN_NOTEBOOK)
-      END_TIME_PREDICT: xx:xx, 07-xx
-  RUN04 finished
-      pc02(YANG_MAIN)
-      END_TIME_PREDICT: xx:xx, xx-xx
-  RUN05 ing
-      pc00(PAN_NOTEBOOK)
-  RUN06 ing
-      pc02(YANG_MAIN)
-      END_TIME_PREDICT: xx:xx, xx-xx
+  RUN01 
+  RUN02 
+  RUN03 
+  RUN04 
+  RUN05 
+  RUN06 
 TS10
-  RUN01 finished
-      pc03(YANG_NOTEBOOK)
-      END_TIME_PREDICT: 21:30, 07-17
-  RUN02 finished
-      pc03(YANG_NOTEBOOK)
-      END_TIME_PREDICT: xx:xx, 07-xx
-  RUN03 ing
-      pc03(YANG_NOTEBOOK)
-      END_TIME_PREDICT: 21:30, 07-17
-  RUN04
-  
+  RUN01 
+  RUN02 
+  RUN03 
+  RUN04 
   RUN05
   RUN06
 TS20
-  RUN01 finished
-    pc01(PAN_MAIN)
-    END_TIME_PREDICT: 00:00, 07-23
-  RUN02
+  RUN01 finished (pc02)
+  RUN02 ing (pc05 5070Ti)
   RUN03
   RUN04
   RUN05
