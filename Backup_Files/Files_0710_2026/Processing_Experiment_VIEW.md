@@ -111,25 +111,25 @@ TRAIN_SIZE=5/10/20 各 6 run
 
 ```
 TS05
-  RUN01 
-  RUN02 
-  RUN03 
-  RUN04 
-  RUN05 
-  RUN06 
+  RUN01 finished (pc00)
+  RUN02 finished (pc03)
+  RUN03 finished (pc03)
+  RUN04 finished (pc00)
+  RUN05 ing (pc03)
+  RUN06 ing (pc00)
 TS10
-  RUN01 
-  RUN02 
+  RUN01 finished (pc01)
+  RUN02 finishe (pc01)
   RUN03 
-  RUN04 
+  RUN04
   RUN05
   RUN06
 TS20
   RUN01 finished (pc02)
-  RUN02 ing (pc05 5070Ti)
-  RUN03
-  RUN04
-  RUN05
+  RUN02 finished (pc05 5070Ti)
+  RUN03 finished (pc02)
+  RUN04 ing (pc05 5070Ti)
+  RUN05 ing (pc02)
   RUN06
 ```
 

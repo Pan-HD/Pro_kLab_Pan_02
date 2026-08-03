@@ -1,0 +1,85 @@
+DILATE (1.00)
+    CANNY (100.00, 200.00)
+        BITWISE_XOR
+            DIFF_PROCESS
+                DIFF_PROCESS
+                    GAUSSIAN_BLUR (5.00, 1.50)
+                        BILATERAL_FILTER (9.00, 75.00, 75.00)
+                            MED_BLUR (19.00)
+                                BLUR (19.00)
+                                    BLUR (19.00)
+                                        BLUR (19.00)
+                                            MED_BLUR (19.00)
+                                                TERMINAL_INPUT
+                    BLUR (19.00)
+                        BLUR (19.00)
+                            MED_BLUR (19.00)
+                                MED_BLUR (19.00)
+                                    SOBEL_X (3.00)
+                                        DILATE (1.00)
+                                            ERODE (1.00)
+                                                TERMINAL_INPUT
+                TERMINAL_INPUT
+            SOBEL_X (3.00)
+                BITWISE_AND
+                    MED_BLUR (19.00)
+                        BITWISE_AND
+                            DIFF_PROCESS
+                                BITWISE_XOR
+                                    BITWISE_OR
+                                        BLUR (19.00)
+                                            MED_BLUR (19.00)
+                                                TERMINAL_INPUT
+                                        BLUR (19.00)
+                                            THRESHOLD (9.00)
+                                                TERMINAL_INPUT
+                                    BITWISE_OR
+                                        ERODE (1.00)
+                                            DILATE (1.00)
+                                                TERMINAL_INPUT
+                                        TERMINAL_INPUT
+                                BITWISE_OR
+                                    ERODE (1.00)
+                                        TERMINAL_INPUT
+                                    ERODE (1.00)
+                                        BILATERAL_FILTER (9.00, 75.00, 75.00)
+                                            TERMINAL_INPUT
+                            MED_BLUR (19.00)
+                                BITWISE_NOT
+                                    BITWISE_OR
+                                        GAUSSIAN_BLUR (5.00, 1.50)
+                                            TERMINAL_INPUT
+                                        SOBEL_X (3.00)
+                                            BITWISE_NOT
+                                                TERMINAL_INPUT
+                    BITWISE_XOR
+                        BITWISE_AND
+                            DIFF_PROCESS
+                                BITWISE_XOR
+                                    BITWISE_OR
+                                        CANNY (100.00, 200.00)
+                                            ERODE (1.00)
+                                                TERMINAL_INPUT
+                                        DILATE (1.00)
+                                            TERMINAL_INPUT
+                                    BITWISE_OR
+                                        THRESHOLD (9.00)
+                                            BILATERAL_FILTER (9.00, 75.00, 75.00)
+                                                TERMINAL_INPUT
+                                        ERODE (1.00)
+                                            TERMINAL_INPUT
+                                BITWISE_OR
+                                    ERODE (1.00)
+                                        TERMINAL_INPUT
+                                    ERODE (1.00)
+                                        ERODE (1.00)
+                                            SOBEL_Y (3.00)
+                                                TERMINAL_INPUT
+                            MED_BLUR (19.00)
+                                BITWISE_NOT
+                                    BILATERAL_FILTER (9.00, 75.00, 75.00)
+                                        TERMINAL_INPUT
+                        SOBEL_Y (3.00)
+                            SOBEL_X (3.00)
+                                SOBEL_Y (3.00)
+                                    TERMINAL_INPUT

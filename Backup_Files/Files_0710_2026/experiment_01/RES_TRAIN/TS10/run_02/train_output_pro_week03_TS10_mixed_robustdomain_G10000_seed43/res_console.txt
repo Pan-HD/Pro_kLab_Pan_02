@@ -1,0 +1,11 @@
+[FINAL-DOMAIN-CHECK] simpleSum=5.8918867193 balancedScore=5.7050225251 robustScore=4.9900957151 storedScore=4.9900957151
+[FINAL-DOMAIN-CHECK] meanAll=0.5891886719 meanThin=0.4770701554 meanThick=0.6639343496 nThin=4 nThick=6
+[FINAL-DOMAIN-CHECK] worst3Thin=0.4363056705 worst3Thick=0.5697685773 robustThin=0.4648408099 robustThick=0.6356846180
+[FINAL-DOMAIN-CHECK] robustWorstDomain=0.4648408099 robustDomainMean=0.5502627139 robustFinalMean=0.4990095715
+
+[TRAIN-SUMMARY] EliteDropCount=0
+[WEEK01-SUMMARY] label=week03_TS10_mixed_robustdomain_GP_G10000_seed43 TRAIN_SIZE=10 GENERATIONS=10000 totalSec=276238.902 secPerGen=27.623890 genPerMin=2.172033 finalEliteSum=4.9900957151 finalEliteMean=0.4990095715 EliteDropCount=0
+[CAL-SCORE-SUMMARY] calls=1417885 totalSec=276219.594 avgSec=0.194811000
+[GETCURGEN-SUMMARY] calls=10000 totalSec=220442.188 avgSec=22.044218819
+[GA-SUMMARY] enabled=0 trigger=0 success=0 fail=0 blocked=0 empty=0 totalSec=0.000 avgTriggerSec=0.000000 maxTriggerSec=0.000000
+[PRUNE-SUMMARY] enabled=0 attempt=0 success=0 fail=0 totalSec=0.000 avgSec=0.000000
