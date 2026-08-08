@@ -1,0 +1,83 @@
+THRESHOLD (9.00)
+    BITWISE_AND
+        BITWISE_OR
+            BLUR (19.00)
+                MED_BLUR (19.00)
+                    DIFF_PROCESS
+                        DILATE (3.00)
+                            SOBEL_X (3.00)
+                                TERMINAL_INPUT
+                        TERMINAL_INPUT
+            BILATERAL_FILTER (9.00, 75.00, 75.00)
+                THRESHOLD (9.00)
+                    DIFF_PROCESS
+                        ERODE (3.00)
+                            BITWISE_NOT
+                                BITWISE_XOR
+                                    CC_FILTER (5.00, 3.00)
+                                        CC_FILTER (5.00, 3.00)
+                                            CANNY (100.00, 200.00)
+                                                TERMINAL_INPUT
+                                    GAUSSIAN_BLUR (5.00, 1.50)
+                                        DILATE (3.00)
+                                            GAUSSIAN_BLUR (5.00, 1.50)
+                                                TERMINAL_INPUT
+                        ERODE (3.00)
+                            TERMINAL_INPUT
+        GAUSSIAN_BLUR (5.00, 1.50)
+            DIFF_PROCESS
+                BITWISE_AND
+                    BLUR (19.00)
+                        BLUR (19.00)
+                            BITWISE_XOR
+                                BITWISE_OR
+                                    SOBEL_Y (3.00)
+                                        DILATE (3.00)
+                                            BILATERAL_FILTER (9.00, 75.00, 75.00)
+                                                TERMINAL_INPUT
+                                    THRESHOLD (9.00)
+                                        ERODE (3.00)
+                                            THRESHOLD (9.00)
+                                                TERMINAL_INPUT
+                                SOBEL_X (3.00)
+                                    SOBEL_X (3.00)
+                                        BITWISE_AND
+                                            TERMINAL_INPUT
+                                            DILATE (3.00)
+                                                TERMINAL_INPUT
+                    THRESHOLD (9.00)
+                        DIFF_PROCESS
+                            GAUSSIAN_BLUR (5.00, 1.50)
+                                DILATE (3.00)
+                                    SOBEL_Y (3.00)
+                                        SOBEL_Y (3.00)
+                                            BILATERAL_FILTER (9.00, 75.00, 75.00)
+                                                TERMINAL_INPUT
+                            BITWISE_XOR
+                                BITWISE_NOT
+                                    BITWISE_NOT
+                                        BITWISE_XOR
+                                            TERMINAL_INPUT
+                                            TERMINAL_INPUT
+                                BITWISE_XOR
+                                    DIFF_PROCESS
+                                        DIFF_PROCESS
+                                            SOBEL_X (3.00)
+                                                TERMINAL_INPUT
+                                            BILATERAL_FILTER (9.00, 75.00, 75.00)
+                                                TERMINAL_INPUT
+                                        CC_FILTER (5.00, 3.00)
+                                            ERODE (3.00)
+                                                TERMINAL_INPUT
+                                    ERODE (3.00)
+                                        TERMINAL_INPUT
+                ERODE (3.00)
+                    MED_BLUR (19.00)
+                        MED_BLUR (19.00)
+                            BLUR (19.00)
+                                MED_BLUR (19.00)
+                                    BITWISE_XOR
+                                        GAUSSIAN_BLUR (5.00, 1.50)
+                                            DILATE (3.00)
+                                                TERMINAL_INPUT
+                                        TERMINAL_INPUT
