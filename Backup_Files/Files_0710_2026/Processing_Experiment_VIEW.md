@@ -120,16 +120,16 @@ TS05
 TS10
   RUN01 finished (pc01)
   RUN02 finished (pc01)
-  RUN03 finishe (pc01)
+  RUN03 finished (pc01)
   RUN04 finished (pc03)
   RUN05 ing (pc00)
-  RUN06 ing (pc03)
+  RUN06 finished (pc03)
 TS20
   RUN01 finished (pc02)
   RUN02 finished (pc05 5070Ti)
   RUN03 finished (pc02)
   RUN04 finished (pc05 5070Ti)
-  RUN05 ing (pc02)
-  RUN06 ing (pc05 5070Ti)
+  RUN05 finished (pc02)
+  RUN06 finished (pc05 5070Ti)
 ```
 
