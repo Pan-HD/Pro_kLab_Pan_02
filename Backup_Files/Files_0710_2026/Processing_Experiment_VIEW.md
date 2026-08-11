@@ -122,7 +122,7 @@ TS10
   RUN02 finished (pc01)
   RUN03 finished (pc01)
   RUN04 finished (pc03)
-  RUN05 ing (pc00)
+  RUN05 finished (pc00)
   RUN06 finished (pc03)
 TS20
   RUN01 finished (pc02)

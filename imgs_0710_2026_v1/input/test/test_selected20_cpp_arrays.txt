@@ -1,0 +1,12 @@
+static const int TEST_SIZE = 20;
+
+static const int TEST_IMAGE_IDS[TEST_SIZE] = {
+    213, 221, 224, 236, 248, 263, 272, 284, 285, 300,
+    306, 328, 332, 345, 354, 358, 369, 375, 402, 407
+};
+
+// 0 = thin / low-contrast, 1 = thick / high-contrast or complex
+static const int TEST_DOMAIN[TEST_SIZE] = {
+    0, 1, 1, 1, 0, 0, 0, 1, 1, 1,
+    1, 1, 1, 1, 0, 0, 1, 0, 1, 0
+};

@@ -1,0 +1,21 @@
+image_id,filename,domain,domain_name,reason,mask_fg_ratio,mask_mean_thickness_proxy,component_count_ge5px,image_std_proxy,edge_density_proxy
+213,crack_00213.png,0,thin_low_contrast,"thin / low-contrast, diagonal boundary-like crack",0.0080865353954081,3.2316518,5,52.38355252967063,0.3385184151785714
+221,crack_00221.png,1,thick_high_contrast_or_complex,"thick / high-contrast, horizontal winding crack",0.0445133131377551,9.137332,1,45.429491001848575,0.3585329639668367
+224,crack_00224.png,1,thick_high_contrast_or_complex,"thick / textured background, horizontal crack",0.0328892299107142,7.409262,3,47.059120248126426,0.3618712133290816
+236,crack_00236.png,1,thick_high_contrast_or_complex,"thick / high-contrast, vertical crack",0.0548917809311224,13.821956,1,47.06392244184761,0.3391661352040816
+248,crack_00248.png,0,thin_low_contrast,"thin / low-contrast, narrow vertical crack",0.0135024713010204,3.4598892,2,41.22265999208902,0.3610042649872449
+263,crack_00263.png,0,thin_low_contrast,"thin / low-contrast, short oblique crack",0.0113052056760204,4.1176667,1,32.20458255945686,0.3031130420918367
+272,crack_00272.png,0,thin_low_contrast,"thin / low-contrast, narrow vertical crack",0.0070750956632653,3.7965794,1,34.56695837555247,0.2978565449617347
+284,crack_00284.png,1,thick_high_contrast_or_complex,"thick / high-contrast, boundary/corner crack",0.0510204081632653,22.673956,2,33.55163822536231,0.3195750956632653
+285,crack_00285.png,1,thick_high_contrast_or_complex,"thick / high-contrast, wide diagonal crack",0.0493064413265306,11.591413,2,32.47594943832982,0.3107162786989796
+300,crack_00300.png,1,thick_high_contrast_or_complex,"thick / complex, multiple vertical cracks",0.0704370615433673,7.310988,14,34.03199929307381,0.2994808274872449
+306,crack_00306.png,1,thick_high_contrast_or_complex,"thick / complex network, polygonal cracks",0.102180325255102,6.321897,21,42.10598915627046,0.3195501833545918
+328,crack_00328.png,1,thick_high_contrast_or_complex,"thick / complex network, polygonal cracks",0.0918317522321428,8.079065,19,27.13088505440907,0.2932378029336734
+332,crack_00332.png,1,thick_high_contrast_or_complex,"thick / complex network, dense cracks",0.0901975047831632,4.892754,32,31.4221970796383,0.3168995137117347
+345,crack_00345.png,1,thick_high_contrast_or_complex,"thick / high-contrast, vertical crack",0.0276875398596938,15.066238,2,27.755593297156327,0.3149663185586734
+354,crack_00354.png,0,thin_low_contrast,"thin / low-contrast, short isolated crack",0.0103734853316326,5.45381,1,21.494795338796617,0.2582409917091837
+358,crack_00358.png,0,thin_low_contrast,"thin / low-contrast, single narrow crack",0.0066466039540816,4.3505692,1,22.503861652659435,0.3330227598852041
+369,crack_00369.png,1,thick_high_contrast_or_complex,"thick / high-contrast, horizontal boundary crack",0.0206871811224489,17.746954,3,21.88289022094073,0.2175990513392857
+375,crack_00375.png,0,thin_low_contrast,"thin / low-contrast, long oblique crack",0.0152164381377551,4.7416677,1,22.007019816175557,0.2990573182397959
+402,crack_00402.png,1,thick_high_contrast_or_complex,"thick / high-contrast, horizontal crack",0.0280412946428571,8.870091,4,26.337398487025567,0.3141591597576531
+407,crack_00407.png,0,thin_low_contrast,"thin / low-contrast, horizontal crack",0.0186344068877551,4.1436706,2,23.515078256096253,0.2987035634566326
