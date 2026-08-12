@@ -80,16 +80,17 @@
         - ```
           D:\Program_Files\opencv\build\install\include
           D:\Program_Files\opencv\build\install\include\opencv2
+          C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.3\include
           ```
-
+    
       - 库目录
-
+    
         - ```
           D:\Program_Files\opencv\build\install\x64\vc17\lib
           ```
-
+    
     - 链接器 - 输入 - 附加依赖项
-
+    
       - ```
         opencv_world4100.lib
         nppc.lib
