@@ -1,0 +1,7 @@
+﻿check,value,expected,pass,note
+baseline_per_image_rows,800,800,1,4 baselines × 200 images
+baseline_summary_rows,4,4,1,
+unique_baselines,4,4,1,
+all_baselines_have_200_images,4,4,1,
+image_ids_are_211_410_once_per_baseline,1,1,1,
+standard_f1_matches_tp_fp_fn,800,800,1,max_abs_diff=4.995e-11

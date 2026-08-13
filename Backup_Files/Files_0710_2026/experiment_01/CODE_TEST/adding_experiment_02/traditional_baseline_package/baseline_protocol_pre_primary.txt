@@ -1,0 +1,59 @@
+TRADITIONAL BASELINE PRE-PRIMARY PROTOCOL
+Generated before primary-200 evaluation.
+
+PURPOSE
+Compare manually predeclared traditional image-processing pipelines with
+the GP-generated pipelines while reusing the same CUDA operator implementations
+and the same STANDARD F1 evaluation path.
+
+IMPORTANT STUDY RULE
+1. Run TRAINING SANITY first (IDs 111-130).
+2. Training sanity is for implementation validation only:
+   tree parsing, binary output, foreground polarity, CUDA/CC_FILTER errors,
+   and obvious path/configuration mistakes.
+3. Do not repeatedly tune parameters to maximize training F1.
+4. If a genuine implementation/polarity error is found, correct it using
+   training data only and document the correction before primary-200.
+5. Once definitions are accepted, freeze them.
+6. Run primary-200 exactly once with the frozen definitions.
+7. Never change topology/parameters after seeing IDs 211-410 performance.
+
+PREDECLARED BASELINES
+B0:
+  GaussianBlur(5, 1.5) -> Threshold(9)
+
+B1:
+  GaussianBlur(5, 1.5) -> Canny(100, 200) -> Dilate(r=1; 3x3) ->
+  CC_FILTER(areaTh=5, aspectRange=3)
+
+B2:
+  GaussianBlur(5, 1.5) -> Sobel-X(3) and Sobel-Y(3) -> BITWISE_OR ->
+  Threshold(9) -> Dilate(r=1; 3x3) -> CC_FILTER(5, 3)
+
+B3:
+  MedianBlur(19) -> Threshold(9) -> Erode(r=1; 3x3) ->
+  Dilate(r=1; 3x3) -> CC_FILTER(5, 3)
+
+PARAMETER POLICY
+The parameter values above are the current GP safe/default values.
+No parameter was selected using primary-test performance.
+
+TREE FILE SHA-256 (current pre-primary version)
+a4a94dce0c319bea98cb69dcb3ccbe727a4362dfc0bef5ed14cdf1b3e1f326a5  baseline_B0_gaussian_threshold_printed_tree_sys.txt
+70737781ab88e0777c86526565d72442d0b798c1f367953f36baa491ad92584d  baseline_B1_canny_morph_cc_printed_tree_sys.txt
+cd039253205a7ceec8050a5b58c6b65da578506abc53711d3de21461ab9290c1  baseline_B2_sobel_xy_threshold_morph_cc_printed_tree_sys.txt
+25f29e5de9ab4c57e91d31384808a1bda278832c58ab4f2bcb756d33e3858e10  baseline_B3_median_threshold_opening_cc_printed_tree_sys.txt
+
+PRIMARY METRIC
+standard F1 = 2TP / (2TP + FP + FN)
+
+PRIMARY TEST
+image IDs 211-410, all 200 images.
+
+DIAGNOSTIC TRAINING SANITY
+image IDs 111-130, all 20 images.
+
+NOTE ON CSV
+Baseline train_size=0 and seed=0 are placeholders indicating
+a deterministic non-evolutionary method. Column names/order match the GP
+200-image evaluator so the files can be concatenated/merged directly.

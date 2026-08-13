@@ -1,0 +1,94 @@
+TRADITIONAL BASELINE TRAINING-ONLY CALIBRATION
+=============================================
+
+Calibration images: 111-130 only (20 images)
+Primary test images 211-410 were NOT loaded by this program.
+Primary metric: standard F1 = 2TP/(2TP+FP+FN)
+Selection: max mean F1; tie -> max min F1; tie -> smaller candidate_id.
+
+Predeclared grid sizes:
+B0 stage1 = 3 Gaussian kernels x 3 sigma x 10 thresholds = 90 candidates
+B1 stage1 = 3 x 3 x 5 Canny pairs = 45 candidates
+B1 stage2 = 3 dilate x 4 CC area x 3 CC aspect = 36 candidates
+B2 stage1 = 3 x 3 x 3 Sobel x 10 thresholds = 270 candidates
+B2 stage2 = 3 dilate x 4 CC area x 3 CC aspect = 36 candidates
+B3 stage1 = 5 median kernels x 10 thresholds = 50 candidates
+B3 stage2 = 3 erode x 3 dilate x 4 CC area x 3 CC aspect = 108 candidates
+Total grid candidates = 635
+Total candidate-image evaluations = 12,700
+Final winner replay = 80 additional image evaluations
+
+FIXED TOPOLOGIES
+B0: GaussianBlur -> Threshold -> BITWISE_NOT
+B1: GaussianBlur -> Canny -> Dilate -> CC_FILTER
+B2: GaussianBlur -> SobelX/Y -> OR -> Threshold -> Dilate -> CC_FILTER
+B3: MedianBlur -> Threshold -> BITWISE_NOT -> Erode -> Dilate -> CC_FILTER
+
+RESOLVED FROZEN PARAMETERS
+
+B0 candidate=45
+  train_mean_f1=0.3543030810
+  train_min_f1=0.0354442894
+  gaussian_k=5.0000000000
+  gaussian_sigma=1.5000000000
+  median_k=-1.0000000000
+  canny_t1=-1.0000000000
+  canny_t2=-1.0000000000
+  sobel_k=-1.0000000000
+  threshold=110.0000000000
+  erode_r=-1.0000000000
+  dilate_r=-1.0000000000
+  cc_area=-1.0000000000
+  cc_aspect=-1.0000000000
+  frozen_tree=./imgs_0710_2026_v1/input/test/baseline_tree_frozen/baseline_B0_gaussian_threshold_printed_tree_sys.txt
+
+B1 candidate=170
+  train_mean_f1=0.1051102176
+  train_min_f1=0.0017814602
+  gaussian_k=3.0000000000
+  gaussian_sigma=1.5000000000
+  median_k=-1.0000000000
+  canny_t1=100.0000000000
+  canny_t2=200.0000000000
+  sobel_k=-1.0000000000
+  threshold=-1.0000000000
+  erode_r=-1.0000000000
+  dilate_r=2.0000000000
+  cc_area=10.0000000000
+  cc_aspect=3.0000000000
+  frozen_tree=./imgs_0710_2026_v1/input/test/baseline_tree_frozen/baseline_B1_canny_morph_cc_printed_tree_sys.txt
+
+B2 candidate=464
+  train_mean_f1=0.1076220162
+  train_min_f1=0.0017221617
+  gaussian_k=3.0000000000
+  gaussian_sigma=1.0000000000
+  median_k=-1.0000000000
+  canny_t1=-1.0000000000
+  canny_t2=-1.0000000000
+  sobel_k=3.0000000000
+  threshold=120.0000000000
+  erode_r=-1.0000000000
+  dilate_r=1.0000000000
+  cc_area=10.0000000000
+  cc_aspect=3.0000000000
+  frozen_tree=./imgs_0710_2026_v1/input/test/baseline_tree_frozen/baseline_B2_sobel_xy_threshold_morph_cc_printed_tree_sys.txt
+
+B3 candidate=600
+  train_mean_f1=0.0463940534
+  train_min_f1=0.0108681485
+  gaussian_k=-1.0000000000
+  gaussian_sigma=-1.0000000000
+  median_k=19.0000000000
+  canny_t1=-1.0000000000
+  canny_t2=-1.0000000000
+  sobel_k=-1.0000000000
+  threshold=30.0000000000
+  erode_r=2.0000000000
+  dilate_r=0.0000000000
+  cc_area=1.0000000000
+  cc_aspect=1.0000000000
+  frozen_tree=./imgs_0710_2026_v1/input/test/baseline_tree_frozen/baseline_B3_median_threshold_opening_cc_printed_tree_sys.txt
+
+FREEZE RULE
+After these frozen trees are used on primary200, do not modify topology or parameters based on test performance.

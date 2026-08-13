@@ -1,0 +1,3 @@
+﻿method,training_set,train_standard_mean_f1,primary200_standard_mean_f1,train_test_gap,note
+Traditional B0,111-130 (20 images),0.354303081,0.198727367785,0.15557571321500002,single deterministic training-calibrated baseline
+GP TS20,111-130 (20 images),0.5855340242000001,0.1783118534947499,0.4072221707052499,mean across 6 GP runs

@@ -1,0 +1,8 @@
+﻿method,method_type,training_images_for_parameter_selection,primary200_macro_mean_f1,between_run_sd,within_200_image_pop_sd,note
+Traditional B0,deterministic handcrafted baseline,20,0.198727367785,,0.13906688795967412,single deterministic pipeline; image SD is not between-run SD
+Traditional B1,deterministic handcrafted baseline,20,0.030444915036,,0.042363817809705266,single deterministic pipeline; image SD is not between-run SD
+Traditional B2,deterministic handcrafted baseline,20,0.030284104752,,0.03830552695361628,single deterministic pipeline; image SD is not between-run SD
+Traditional B3,deterministic handcrafted baseline,20,0.04821657960299999,,0.04186311036135831,single deterministic pipeline; image SD is not between-run SD
+GP TS05,GP,5,0.19520315380758332,0.059607603907167815,,mean ± SD across 6 independent GP runs
+GP TS10,GP,10,0.1827138835274167,0.022915198596895236,,mean ± SD across 6 independent GP runs
+GP TS20,GP,20,0.17831185349474998,0.04098103665032655,,mean ± SD across 6 independent GP runs

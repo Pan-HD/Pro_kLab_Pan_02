@@ -1,0 +1,6 @@
+Baseline tree validation
+
+baseline_B0_gaussian_threshold_printed_tree_sys.txt: PASS, nodes=3, max_depth_0based=2
+baseline_B1_canny_morph_cc_printed_tree_sys.txt: PASS, nodes=5, max_depth_0based=4
+baseline_B2_sobel_xy_threshold_morph_cc_printed_tree_sys.txt: PASS, nodes=10, max_depth_0based=6
+baseline_B3_median_threshold_opening_cc_printed_tree_sys.txt: PASS, nodes=6, max_depth_0based=5

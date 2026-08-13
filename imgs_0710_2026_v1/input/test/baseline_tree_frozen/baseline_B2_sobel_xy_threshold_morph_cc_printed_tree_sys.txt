@@ -1,0 +1,10 @@
+CC_FILTER (10.00, 3.00)
+    DILATE (1.00)
+        THRESHOLD (120.00)
+            BITWISE_OR
+                SOBEL_X (3.00)
+                    GAUSSIAN_BLUR (3.00, 1.00)
+                        TERMINAL_INPUT
+                SOBEL_Y (3.00)
+                    GAUSSIAN_BLUR (3.00, 1.00)
+                        TERMINAL_INPUT

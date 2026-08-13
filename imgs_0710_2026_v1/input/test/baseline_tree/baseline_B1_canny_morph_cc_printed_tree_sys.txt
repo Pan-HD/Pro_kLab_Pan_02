@@ -1,0 +1,5 @@
+CC_FILTER (5.00, 3.00)
+    DILATE (1.00)
+        CANNY (100.00, 200.00)
+            GAUSSIAN_BLUR (5.00, 1.50)
+                TERMINAL_INPUT
