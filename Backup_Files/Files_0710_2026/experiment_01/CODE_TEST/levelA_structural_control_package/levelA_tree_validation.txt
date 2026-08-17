@@ -1,0 +1,6 @@
+Level-A tree validation
+
+levelA_M0_fixedparam_printed_tree_sys.txt: PASS, nodes=4, max_depth_0based=3
+levelA_M1_fixedparam_printed_tree_sys.txt: PASS, nodes=5, max_depth_0based=4
+levelA_M2_fixedparam_printed_tree_sys.txt: PASS, nodes=10, max_depth_0based=6
+levelA_M3_fixedparam_printed_tree_sys.txt: PASS, nodes=7, max_depth_0based=6

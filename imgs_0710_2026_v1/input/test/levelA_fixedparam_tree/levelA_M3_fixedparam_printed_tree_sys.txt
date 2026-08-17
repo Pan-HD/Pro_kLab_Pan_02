@@ -1,0 +1,7 @@
+CC_FILTER (5.00, 3.00)
+    DILATE (1.00)
+        ERODE (1.00)
+            BITWISE_NOT
+                THRESHOLD (9.00)
+                    MED_BLUR (19.00)
+                        TERMINAL_INPUT

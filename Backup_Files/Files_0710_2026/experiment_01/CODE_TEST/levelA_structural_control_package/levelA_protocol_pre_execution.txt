@@ -1,0 +1,55 @@
+LEVEL A — PARAMETER-MATCHED STRUCTURAL CONTROL
+================================================
+
+Research question
+-----------------
+Does GP topology evolution provide an advantage over manually specified
+image-processing topologies when numeric operator parameters are held equal?
+
+Fixed operator parameters
+-------------------------
+These values are identical to the current fixed/safe GP presets:
+
+GAUSSIAN_BLUR = (5, 1.5)
+MED_BLUR      = (19)
+SOBEL_X/Y     = (3)
+CANNY         = (100, 200)
+THRESHOLD     = (9)
+ERODE         = (1)
+DILATE        = (1)
+CC_FILTER     = (5, 3)
+
+Fixed manual topologies
+-----------------------
+M0: GaussianBlur -> Threshold -> BITWISE_NOT
+M1: GaussianBlur -> Canny -> Dilate -> CC_FILTER
+M2: GaussianBlur -> Sobel-X/Y -> BITWISE_OR -> Threshold -> Dilate -> CC_FILTER
+M3: MedianBlur -> Threshold -> BITWISE_NOT -> Erode -> Dilate -> CC_FILTER
+
+No parameter tuning
+-------------------
+There is no grid search, calibration, or candidate selection in Level A.
+Do not alter any numeric value after seeing Level-A outputs.
+
+Interpretation
+--------------
+Level A is a parameter-matched structural control, NOT the strongest practical
+traditional baseline. The previously training-calibrated B0–B3 experiment
+remains the practical-baseline comparison.
+
+Timing / post-hoc status
+------------------------
+The wider primary-200 test results had already been observed before this
+additional control was requested. Therefore Level A should be labeled
+post-hoc/supplementary in the paper. Its topologies and parameter presets are
+reused from definitions that existed before this analysis; do not redesign
+them based on the resulting scores.
+
+Metric
+------
+STANDARD F1 = 2TP/(2TP+FP+FN), no artificial +1 smoothing.
+
+Datasets
+--------
+Training sanity: IDs 111–130, 20 images.
+Primary structural control: IDs 211–410, 200 images.

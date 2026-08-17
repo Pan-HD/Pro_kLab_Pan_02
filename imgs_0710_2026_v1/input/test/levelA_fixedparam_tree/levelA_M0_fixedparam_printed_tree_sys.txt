@@ -1,0 +1,4 @@
+BITWISE_NOT
+    THRESHOLD (9.00)
+        GAUSSIAN_BLUR (5.00, 1.50)
+            TERMINAL_INPUT
